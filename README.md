@@ -3,3 +3,5 @@
 ## School of Computer Science & Applied Mathematics: University of the Witwatersrand
 
 ### Supervised by Dr. Branden Ingram and Dr. Pravesh Ranchod
+
+### This reasearh project is built using [OpenSpiel](https://github.com/google-deepmind/open_spiel): A Framework for Reinforcement Learning in Games
