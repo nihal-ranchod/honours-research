@@ -4,9 +4,9 @@
 
 <h2 align="center"> Supervised by Dr. Branden Ingram and Dr. Pravesh Ranchod </h2>
 
-### This reasearch project is built using [OpenSpiel](https://github.com/google-deepmind/open_spiel): A Framework for Reinforcement Learning in Games
+<p> This reasearch project is built using [OpenSpiel](https://github.com/google-deepmind/open_spiel): A Framework for Reinforcement Learning in Games. </p>
 
-### Dependencies
+<h3> Dependencies </h3>
 ```
 pip install chess
 ```
