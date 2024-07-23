@@ -1,4 +1,4 @@
-# Investigating the optimal AI algorithm for developing expert-level Chess gameplay within the OpenSpiel framework
+<h1 align="center"> Investigating the optimal AI algorithm for developing expert-level Chess gameplay within the OpenSpiel framework </h1>
 
 ## School of Computer Science & Applied Mathematics: University of the Witwatersrand
 
