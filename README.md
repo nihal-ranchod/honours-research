@@ -9,4 +9,5 @@ This reasearch project is built using [OpenSpiel](https://github.com/google-deep
 ### Dependencies 
 ```bash
 pip install chess
+pip install tensorflow
 ```
