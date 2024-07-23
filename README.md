@@ -4,7 +4,7 @@
 
 ### Supervised by Dr. Branden Ingram and Dr. Pravesh Ranchod
 
-### This reasearcg project is built using [OpenSpiel](https://github.com/google-deepmind/open_spiel): A Framework for Reinforcement Learning in Games
+### This reasearch project is built using [OpenSpiel](https://github.com/google-deepmind/open_spiel): A Framework for Reinforcement Learning in Games
 
 ### Dependencies
 ```
