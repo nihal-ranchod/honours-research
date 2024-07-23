@@ -1,6 +1,6 @@
-<h1 align="center"> Investigating the optimal AI algorithm for developing expert-level Chess gameplay within the OpenSpiel framework </h1>
+<h1 align="center"> Investigating the Optimal AI Algorithm for Developing Expert-Level Chess Gameplay within the OpenSpiel Framework. </h1>
 
-## School of Computer Science & Applied Mathematics: University of the Witwatersrand
+<h2 align="center"> School of Computer Science & Applied Mathematics: University of the Witwatersrand </h2>
 
 ### Supervised by Dr. Branden Ingram and Dr. Pravesh Ranchod
 
