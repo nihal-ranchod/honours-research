@@ -10,4 +10,6 @@ This reasearch project is built using [OpenSpiel](https://github.com/google-deep
 ```bash
 pip install chess
 pip install tensorflow
+pip install chess.com
+pip install pandas
 ```
