@@ -24,13 +24,15 @@ from absl import app
 from absl import flags
 import numpy as np
 
-from open_spiel.python.algorithms import mcts
+# from open_spiel.python.algorithms import mcts
 from open_spiel.python.algorithms.alpha_zero import evaluator as az_evaluator
 from open_spiel.python.algorithms.alpha_zero import model as az_model
 from open_spiel.python.bots import gtp
 from open_spiel.python.bots import human
 from open_spiel.python.bots import uniform_random
 import pyspiel
+
+import mcts_algorithm as mcts
 
 _KNOWN_PLAYERS = [
     # A generic Monte Carlo Tree Search agent.
