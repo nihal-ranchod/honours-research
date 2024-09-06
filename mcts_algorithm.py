@@ -20,6 +20,7 @@ import time
 import numpy as np
 
 import pyspiel
+import chess.pgn
 
 
 class Evaluator(object):
@@ -448,3 +449,55 @@ class MCTSBot(pyspiel.Bot):
         break
 
     return root
+
+class MCTSWithTraining(MCTSBot):
+    def __init__(self, game, uct_c, max_simulations, evaluator, pgn_file, random_state=None, solve=False, verbose=False):
+        super().__init__(game, uct_c, max_simulations, evaluator, random_state=random_state, solve=solve, verbose=verbose)
+        self.past_games = self._load_pgn(pgn_file)
+
+    def _load_pgn(self, pgn_file):
+        past_games = []
+        with open(pgn_file) as f:
+            while True:
+                game = chess.pgn.read_game(f)
+                if game is None:
+                    break
+                past_games.append(game)
+        return past_games
+
+    def _initialize_with_past_games(self, root):
+        for game in self.past_games:
+            board = game.board()
+            for move in game.mainline_moves():
+                board.push(move)
+                state = pyspiel.State.from_fen(board.fen())
+                node = SearchNode(None, state.current_player(), 1)
+                root.children.append(node)
+                root = node
+
+    def search(self, state):
+        root = SearchNode(None, state.current_player(), 1)
+        self._initialize_with_past_games(root)
+        for _ in range(self.max_simulations):
+            visit_path, working_state = self._apply_tree_policy(root, state)
+            if working_state.is_terminal():
+                returns = working_state.returns()
+                visit_path[-1].outcome = returns
+                solved = self.solve
+            else:
+                returns = self.evaluator.evaluate(working_state)
+                solved = False
+
+            while visit_path:
+                decision_node_idx = -1
+                while visit_path[decision_node_idx].player == pyspiel.PlayerId.CHANCE:
+                    decision_node_idx -= 1
+                target_return = returns[visit_path[decision_node_idx].player]
+                node = visit_path.pop()
+                node.total_reward += target_return
+                node.explore_count += 1
+
+                if solved and node.children:
+                    node.solved = True
+                    node.outcome = returns
+        return max(root.children, key=lambda n: n.explore_count).move
