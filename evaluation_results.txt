@@ -1,0 +1,6 @@
+random_vs_mcts: {'bot1_wins': 0, 'bot2_wins': 10, 'draws': 0, 'total_moves': 1172, 'total_time': 2244.2606387138367}
+random_vs_mcts_trained: {'bot1_wins': 0, 'bot2_wins': 10, 'draws': 0, 'total_moves': 1172, 'total_time': 2204.732955932617}
+mcts_vs_random: {'bot1_wins': 10, 'bot2_wins': 0, 'draws': 0, 'total_moves': 604, 'total_time': 1234.263575553894}
+mcts_vs_mcts_trained: {'bot1_wins': 6, 'bot2_wins': 4, 'draws': 0, 'total_moves': 1376, 'total_time': 4709.885965585709}
+mcts_trained_vs_random: {'bot1_wins': 10, 'bot2_wins': 0, 'draws': 0, 'total_moves': 604, 'total_time': 1212.1618208885193}
+mcts_trained_vs_mcts: {'bot1_wins': 6, 'bot2_wins': 4, 'draws': 0, 'total_moves': 1376, 'total_time': 4630.576229095459}
