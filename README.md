@@ -24,8 +24,8 @@ pip install pyspiel
 - Vanilla MCTS: `mcts`
 - Trained MCTS: `mcts_trained`
 
-White player: `bot1`
-Black player: `bot2`
+    - White player: `bot1`
+    - Black player: `bot2`
 
 ```bash
 python3 mcts_play.py --player1=bot1 --player2=bot2
