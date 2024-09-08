@@ -65,7 +65,7 @@ def _init_bot(bot_type, game, player_id):
             solve=FLAGS.solve,
             verbose=FLAGS.verbose)
     if bot_type == "mcts_trained":
-        pgn_file = "combined.pgn"
+        pgn_file = "training_data.pgn"
         evaluator = mcts.RandomRolloutEvaluator(FLAGS.rollout_count, rng)
         return mcts.MCTSWithTraining(
             game,
