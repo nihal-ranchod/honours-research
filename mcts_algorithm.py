@@ -451,6 +451,31 @@ class MCTSBot(pyspiel.Bot):
     return root
 
 class MCTSWithTraining(MCTSBot):
+    """
+    Implements a Monte-Carlo Tree Search (MCTS) algorithm with training capabilities.
+    
+    MCTSWithTraining is a subclass of MCTSBot that enhances the vanilla MCTS algorithm by leveraging historical game data
+    stored in a PGN (Portable Game Notation) file to inform its search process. This class initializes the search tree with
+    past games, providing a richer starting point for simulations.
+
+    Methods:
+        __init__(game, uct_c, max_simulations, evaluator, pgn_file, random_state=None, solve=False, verbose=False):
+            Initializes the MCTSWithTraining instance with the given parameters and loads past games from the PGN file.
+
+        _load_pgn(pgn_file):
+            Reads the PGN file and loads the games into a list.
+
+        _initialize_with_past_games(root):
+            Populates the search tree with nodes representing states from the past games.
+
+        search(state):
+            Performs the MCTS search, initializing the root of the search tree with past games and running simulations to
+            find the best move.
+
+    Attributes:
+        past_games (list): A list of past games loaded from the PGN file.
+    """
+
     def __init__(self, game, uct_c, max_simulations, evaluator, pgn_file, random_state=None, solve=False, verbose=False):
         super().__init__(game, uct_c, max_simulations, evaluator, random_state=random_state, solve=solve, verbose=verbose)
         self.past_games = self._load_pgn(pgn_file)
@@ -501,3 +526,4 @@ class MCTSWithTraining(MCTSBot):
                     node.solved = True
                     node.outcome = returns
         return max(root.children, key=lambda n: n.explore_count).move
+    

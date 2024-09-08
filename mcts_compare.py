@@ -1,8 +1,8 @@
-import collections
-import random
-import sys
+"""
+Compare the performance fo different bots in playing chess, using variants of
+the Monte-Carlo Tree Search (MCTS) algorithm. 
+"""
 import time
-import chess
 import numpy as np
 import pyspiel
 from absl import app
@@ -10,10 +10,9 @@ from absl import flags
 
 from open_spiel.python.algorithms.alpha_zero import evaluator as az_evaluator
 from open_spiel.python.algorithms.alpha_zero import model as az_model
-from open_spiel.python.bots import gtp
-from open_spiel.python.bots import human
 from open_spiel.python.bots import uniform_random
 
+# List of known player types for the bots
 import mcts_algorithm as mcts
 
 _KNOWN_PLAYERS = [
@@ -23,6 +22,7 @@ _KNOWN_PLAYERS = [
     "mcts_trained",
 ]
 
+# Define command-line flags for configuring the game and bots
 flags.DEFINE_string("game", "chess", "Name of the game.")
 flags.DEFINE_enum("player1", "mcts", _KNOWN_PLAYERS, "Who controls player 1.")
 flags.DEFINE_enum("player2", "random", _KNOWN_PLAYERS, "Who controls player 2.")
@@ -36,6 +36,7 @@ flags.DEFINE_bool("quiet", False, "Don't show the moves as they're played.")
 flags.DEFINE_bool("verbose", False, "Show the MCTS stats of possible moves.")
 flags.DEFINE_float("elo_k_factor", 32, "K-factor for Elo rating system.")
 
+# Parse the command-line flags
 FLAGS = flags.FLAGS
 
 # Initialize Elo ratings
@@ -46,6 +47,19 @@ def _opt_print(*args, **kwargs):
         print(*args, **kwargs)
 
 def _elo_update(player_rating, opponent_rating, result, k=None):
+    """
+    Update the Elo rating of a player based on the game result.
+    
+    Args:
+        player_rating (float): The current rating of the player.
+        opponent_rating (float): The current rating of the opponent.
+        result (float): The result of the game (1 for win, 0.5 for draw, 0 for loss).
+        k (float, optional): The K-factor for the Elo rating system. If None, use the value from FLAGS.
+    
+    Returns:
+        float: The updated Elo rating of the player.
+    """
+
     if k is None:
         k = FLAGS.elo_k_factor  # Access the flag after it has been parsed
     expected_score = 1 / (1 + 10 ** ((opponent_rating - player_rating) / 400))
@@ -81,6 +95,37 @@ def _init_bot(bot_type, game, player_id):
     raise ValueError(f"Unknown bot type: {bot_type}")
 
 def evaluate_bots(game, bot1, bot2, num_games):
+    """
+    The `evaluate_bots` function evaluates the performance of two bots by running a series 
+    of games between them and collecting various statistics.
+
+    Args:
+        game (pyspiel.Game): The game instance to be played.
+        bot1 (pyspiel.Bot): The first bot to be evaluated.
+        bot2 (pyspiel.Bot): The second bot to be evaluated.
+        num_games (int): The number of games to be played between the two bots.
+
+    Returns:
+        dict: A dictionary containing the following statistics:
+            - "bot1_wins" (int): Number of games won by bot1.
+            - "bot2_wins" (int): Number of games won by bot2.
+            - "draws" (int): Number of games that ended in a draw.
+            - "total_moves" (int): Total number of moves made across all games.
+            - "total_time" (float): Total time taken to play all games.
+            - "move_times" (list of float): List of times taken for each move.
+
+    The function performs the following steps:
+    1. Initializes a results dictionary to store the statistics.
+    2. Iterates through the specified number of games.
+    3. For each game:
+        a. Initializes the game state.
+        b. Tracks the start time of the game.
+        c. Alternates between the two bots to make moves until the game reaches a terminal state.
+        d. Records the time taken for each move.
+        e. Updates the results dictionary based on the game outcome.
+    4. Aggregates the results and returns the statistics.
+    """
+
     results = {
         "bot1_wins": 0, 
         "bot2_wins": 0, 
@@ -156,14 +201,12 @@ def main(argv):
                 results[f"{bot1_type}_vs_{bot2_type}"] = match_results
                 _opt_print(f"Results for {bot1_type} vs {bot2_type}: {match_results}")
     
-    # Save results and Elo ratings
     with open("evaluation_results2.txt", "w") as f:
         for match, result in results.items():
             f.write(f"{match}:\n")
             for key, value in result.items():
                 f.write(f"  {key}: {value}\n")
-    
-    # Print summary including Elo ratings
+
     _opt_print("\nFinal Elo Ratings:")
     _opt_print(f"Bot1 Elo Rating: {elo_ratings['bot1']}")
     _opt_print(f"Bot2 Elo Rating: {elo_ratings['bot2']}")

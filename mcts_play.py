@@ -35,7 +35,7 @@ import pyspiel
 import mcts_algorithm as mcts
 
 _KNOWN_PLAYERS = [
-    # A generic Monte Carlo Tree Search agent.
+    # A vanilla Monte Carlo Tree Search agent.
     "mcts",
 
     # A generic random agent.
@@ -121,11 +121,6 @@ def _init_bot(bot_type, game, player_id):
     return uniform_random.UniformRandomBot(player_id, rng)
   if bot_type == "human":
     return human.HumanBot()
-  # if bot_type == "gtp":
-  #   bot = gtp.GTPBot(game, FLAGS.gtp_path)
-  #   for cmd in FLAGS.gtp_cmd:
-  #     bot.gtp_cmd(cmd)
-  #   return bot
   raise ValueError("Invalid bot type: %s" % bot_type)
 
 # Converts action string to action object using the game's legal actions
