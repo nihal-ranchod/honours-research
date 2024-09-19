@@ -33,6 +33,7 @@ from open_spiel.python.bots import uniform_random
 import pyspiel
 
 import mcts_algorithm as mcts
+from nfsp_algorithm import NFSPAgent
 
 _KNOWN_PLAYERS = [
     # A vanilla Monte Carlo Tree Search agent.
@@ -45,6 +46,8 @@ _KNOWN_PLAYERS = [
     "human",
 
     "mcts_trained",
+
+    "nfsp"
 
     # # Run an external program that speaks the Go Text Protocol.
     # # Requires the gtp_path flag.
@@ -71,6 +74,12 @@ flags.DEFINE_bool("random_first", False, "Play the first move randomly.")
 flags.DEFINE_bool("solve", True, "Whether to use MCTS-Solver.")
 flags.DEFINE_bool("quiet", False, "Don't show the moves as they're played.")
 flags.DEFINE_bool("verbose", False, "Show the MCTS stats of possible moves.")
+flags.DEFINE_float("epsilon", 0.1, "Exploration rate for NFSP.")
+flags.DEFINE_float("learning_rate", 1e-3, "Learning rate for NFSP.")
+flags.DEFINE_float("discount_factor", 0.99, "Discount factor for NFSP.")
+flags.DEFINE_integer("replay_buffer_size", 10000, "Size of the replay buffer.")
+flags.DEFINE_integer("batch_size", 32, "Batch size for training.")
+
 
 FLAGS = flags.FLAGS
 
@@ -105,6 +114,21 @@ def _init_bot(bot_type, game, player_id):
         random_state=rng,
         solve=FLAGS.solve,
         verbose=FLAGS.verbose)
+  if bot_type == "nfsp":
+    # Create an initial state to get the size of the observation tensor
+    initial_state = game.new_initial_state()
+    observation_size = len(initial_state.observation_tensor())
+    num_actions = len(initial_state.legal_actions())
+
+    policy_network = NFSPAgent.build_network((observation_size,), num_actions)
+    value_network = NFSPAgent.build_network((observation_size,), 1)
+        
+    agent = NFSPAgent(game, policy_network, value_network, 
+                          epsilon=FLAGS.epsilon, learning_rate=FLAGS.learning_rate, 
+                          discount_factor=FLAGS.discount_factor, 
+                          replay_buffer_size=FLAGS.replay_buffer_size, 
+                          batch_size=FLAGS.batch_size)
+    return agent
   # if bot_type == "az":
   #   model = az_model.Model.from_checkpoint(FLAGS.az_path)
   #   evaluator = az_evaluator.AlphaZeroEvaluator(game, model)
