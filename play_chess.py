@@ -48,14 +48,6 @@ _KNOWN_PLAYERS = [
     "mcts_trained",
 
     "nfsp"
-
-    # # Run an external program that speaks the Go Text Protocol.
-    # # Requires the gtp_path flag.
-    # "gtp",
-
-    # # Run an alpha_zero checkpoint with MCTS. Uses the specified UCT/sims.
-    # # Requires the az_path flag.
-    # "az"
 ]
 
 flags.DEFINE_string("game", "chess", "Name of the game.")
@@ -68,7 +60,7 @@ flags.DEFINE_string("az_path", None,
 flags.DEFINE_integer("uct_c", 2, "UCT's exploration constant.")
 flags.DEFINE_integer("rollout_count", 1, "How many rollouts to do.")
 flags.DEFINE_integer("max_simulations", 1000, "How many simulations to run.")
-flags.DEFINE_integer("num_games", 1, "How many games to play.")
+flags.DEFINE_integer("num_games", 20, "How many games to play.")
 flags.DEFINE_integer("seed", None, "Seed for the random number generator.")
 flags.DEFINE_bool("random_first", False, "Play the first move randomly.")
 flags.DEFINE_bool("solve", True, "Whether to use MCTS-Solver.")
@@ -129,18 +121,6 @@ def _init_bot(bot_type, game, player_id):
                           replay_buffer_size=FLAGS.replay_buffer_size, 
                           batch_size=FLAGS.batch_size)
     return agent
-  # if bot_type == "az":
-  #   model = az_model.Model.from_checkpoint(FLAGS.az_path)
-  #   evaluator = az_evaluator.AlphaZeroEvaluator(game, model)
-  #   return mcts.MCTSBot(
-  #       game,
-  #       FLAGS.uct_c,
-  #       FLAGS.max_simulations,
-  #       evaluator,
-  #       random_state=rng,
-  #       child_selection_fn=mcts.SearchNode.puct_value,
-  #       solve=FLAGS.solve,
-  #       verbose=FLAGS.verbose)
   if bot_type == "random":
     return uniform_random.UniformRandomBot(player_id, rng)
   if bot_type == "human":
@@ -222,7 +202,6 @@ def _play_game(game, bots, initial_actions):
     bot.restart()
 
   return returns, history
-
 
 def main(argv):
   game = pyspiel.load_game(FLAGS.game)
