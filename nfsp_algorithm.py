@@ -4,16 +4,6 @@ from tensorflow.keras import layers
 import pyspiel
 from collections import deque
 import random
-import os
-import csv
-
-# CSV logging setup
-csv_file = 'nfsp_agent_training.csv'
-csv_columns = ['step', 'state', 'action', 'reward', 'next_state', 'done', 'value_loss', 'policy_loss']
-if not os.path.exists(csv_file):
-    with open(csv_file, mode='w', newline='') as file:
-        writer = csv.DictWriter(file, fieldnames=csv_columns)
-        writer.writeheader()
 
 class NFSPAgent:
     def __init__(self, game, policy_network, value_network, 
@@ -34,9 +24,6 @@ class NFSPAgent:
 
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=self.learning_rate)
         self.current_state = None
-
-        # TensorBoard setup
-        self.summary_writer = tf.summary.create_file_writer('logs/nfsp_agent')
 
         # Step counter
         self.step_counter = 0
@@ -96,26 +83,6 @@ class NFSPAgent:
 
             grads = tape.gradient(value_loss + policy_loss, self.policy_network.trainable_variables + self.value_network.trainable_variables)
             self.optimizer.apply_gradients(zip(grads, self.policy_network.trainable_variables + self.value_network.trainable_variables))
-
-        # Log metrics to TensorBoard
-        with self.summary_writer.as_default():
-            tf.summary.scalar('value_loss', value_loss, step=self.optimizer.iterations)
-            tf.summary.scalar('policy_loss', policy_loss, step=self.optimizer.iterations)
-            tf.summary.scalar('reward', reward, step=self.optimizer.iterations)
-
-        # Log metrics to CSV
-        with open(csv_file, mode='a', newline='') as file:
-            writer = csv.DictWriter(file, fieldnames=csv_columns)
-            writer.writerow({
-                'step': self.step_counter,
-                'state': self._state_to_features(state).tolist(),
-                'action': action,
-                'reward': reward,
-                'next_state': self._state_to_features(next_state).tolist(),
-                'done': done,
-                'value_loss': value_loss.numpy(),
-                'policy_loss': policy_loss.numpy()
-            })
 
         self.step_counter += 1
 
