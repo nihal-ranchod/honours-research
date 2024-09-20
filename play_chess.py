@@ -60,17 +60,18 @@ flags.DEFINE_string("az_path", None,
 flags.DEFINE_integer("uct_c", 2, "UCT's exploration constant.")
 flags.DEFINE_integer("rollout_count", 1, "How many rollouts to do.")
 flags.DEFINE_integer("max_simulations", 1000, "How many simulations to run.")
-flags.DEFINE_integer("num_games", 20, "How many games to play.")
+flags.DEFINE_integer("num_games", 500, "How many games to play.")
 flags.DEFINE_integer("seed", None, "Seed for the random number generator.")
 flags.DEFINE_bool("random_first", False, "Play the first move randomly.")
 flags.DEFINE_bool("solve", True, "Whether to use MCTS-Solver.")
 flags.DEFINE_bool("quiet", False, "Don't show the moves as they're played.")
 flags.DEFINE_bool("verbose", False, "Show the MCTS stats of possible moves.")
+
 flags.DEFINE_float("epsilon", 0.1, "Exploration rate for NFSP.")
-flags.DEFINE_float("learning_rate", 1e-3, "Learning rate for NFSP.")
-flags.DEFINE_float("discount_factor", 0.99, "Discount factor for NFSP.")
-flags.DEFINE_integer("replay_buffer_size", 10000, "Size of the replay buffer.")
-flags.DEFINE_integer("batch_size", 32, "Batch size for training.")
+flags.DEFINE_float("learning_rate", 1e-2, "Learning rate for NFSP.")
+flags.DEFINE_float("discount_factor", 0.995, "Discount factor for NFSP.")
+flags.DEFINE_integer("replay_buffer_size", 80000, "Size of the replay buffer.")
+flags.DEFINE_integer("batch_size", 64, "Batch size for training.")
 
 
 FLAGS = flags.FLAGS
