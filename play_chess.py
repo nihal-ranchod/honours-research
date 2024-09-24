@@ -1,25 +1,16 @@
-# Copyright 2019 DeepMind Technologies Limited
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+""" Play File
 
-"""MCTS example."""
+    Python file to simulate a single Chess game between any two bots.
+    
+    Chaneg Bot Player in the defined Flags:
+      player 1 - play as White
+      player 2 - play as Black
+"""
 
 import collections
 import random
 import sys
 import chess
-
-# handle command-line arguments
 from absl import app
 from absl import flags
 import numpy as np
@@ -32,8 +23,10 @@ from open_spiel.python.bots import human
 from open_spiel.python.bots import uniform_random
 import pyspiel
 
+# Add created Agents
 import mcts_algorithm as mcts
 from nfsp_algorithm import NFSPAgent
+from ga_algorithm import GeneticAlgorithmBot
 
 _KNOWN_PLAYERS = [
     # A vanilla Monte Carlo Tree Search agent.
@@ -45,34 +38,38 @@ _KNOWN_PLAYERS = [
     # You'll be asked to provide the moves.
     "human",
 
+    # A MCTS agent trained on past PGN data
     "mcts_trained",
 
-    "nfsp"
+    # A Neural Fictitious Self-Play agent
+    "nfsp",
+
+    # A Genetic Algorithm agent
+    "ga"
 ]
 
 flags.DEFINE_string("game", "chess", "Name of the game.")
-flags.DEFINE_enum("player1", "mcts", _KNOWN_PLAYERS, "Who controls player 1.")
+flags.DEFINE_enum("player1", "ga", _KNOWN_PLAYERS, "Who controls player 1.")
 flags.DEFINE_enum("player2", "random", _KNOWN_PLAYERS, "Who controls player 2.")
 flags.DEFINE_string("gtp_path", None, "Where to find a binary for gtp.")
 flags.DEFINE_multi_string("gtp_cmd", [], "GTP commands to run at init.")
-flags.DEFINE_string("az_path", None,
-                    "Path to an alpha_zero checkpoint. Needed by an az player.")
+flags.DEFINE_string("az_path", None, "Path to an alpha_zero checkpoint. Needed by an az player.")
 flags.DEFINE_integer("uct_c", 2, "UCT's exploration constant.")
 flags.DEFINE_integer("rollout_count", 1, "How many rollouts to do.")
 flags.DEFINE_integer("max_simulations", 1000, "How many simulations to run.")
-flags.DEFINE_integer("num_games", 500, "How many games to play.")
+flags.DEFINE_integer("num_games", 1, "How many games to play.")
 flags.DEFINE_integer("seed", None, "Seed for the random number generator.")
 flags.DEFINE_bool("random_first", False, "Play the first move randomly.")
 flags.DEFINE_bool("solve", True, "Whether to use MCTS-Solver.")
 flags.DEFINE_bool("quiet", False, "Don't show the moves as they're played.")
 flags.DEFINE_bool("verbose", False, "Show the MCTS stats of possible moves.")
 
+# NFSP flags
 flags.DEFINE_float("epsilon", 0.1, "Exploration rate for NFSP.")
 flags.DEFINE_float("learning_rate", 1e-2, "Learning rate for NFSP.")
 flags.DEFINE_float("discount_factor", 0.995, "Discount factor for NFSP.")
-flags.DEFINE_integer("replay_buffer_size", 80000, "Size of the replay buffer.")
+flags.DEFINE_integer("replay_buffer_size", 10000, "Size of the replay buffer.")
 flags.DEFINE_integer("batch_size", 64, "Batch size for training.")
-
 
 FLAGS = flags.FLAGS
 
@@ -80,7 +77,6 @@ FLAGS = flags.FLAGS
 def _opt_print(*args, **kwargs):
   if not FLAGS.quiet:
     print(*args, **kwargs)
-
 
 def _init_bot(bot_type, game, player_id):
   """Initializes a bot by type."""
@@ -122,6 +118,14 @@ def _init_bot(bot_type, game, player_id):
                           replay_buffer_size=FLAGS.replay_buffer_size, 
                           batch_size=FLAGS.batch_size)
     return agent
+  if bot_type == "ga":
+    evaluator = mcts.RandomRolloutEvaluator(n_rollouts=10)
+    return GeneticAlgorithmBot(game, 
+                               population_size=50, 
+                               mutation_rate=0.1, 
+                               generations=10, 
+                               evaluator=evaluator, 
+                               random_state=rng)
   if bot_type == "random":
     return uniform_random.UniformRandomBot(player_id, rng)
   if bot_type == "human":
@@ -134,7 +138,6 @@ def _get_action(state, action_str):
     if action_str == state.action_to_string(state.current_player(), action):
       return action
   return None
-
 
 def _play_game(game, bots, initial_actions):
   """Plays one game."""
@@ -160,7 +163,7 @@ def _play_game(game, bots, initial_actions):
     state.apply_action(action)
     _opt_print("Forced action", action_str)
     _opt_print("Next state:\n{}".format(state))
-    _opt_print(chess.Board(fen=str(state)))
+    # _opt_print(chess.Board(fen=str(state)))
 
   while not state.is_terminal():
     current_player = state.current_player()
@@ -174,7 +177,7 @@ def _play_game(game, bots, initial_actions):
       action_list, prob_list = zip(*outcomes)
       action = np.random.choice(action_list, p=prob_list)
       action_str = state.action_to_string(current_player, action)
-      _opt_print("Sampled action: ", action_str)
+      # _opt_print("Sampled action: ", action_str)
     elif state.is_simultaneous_node():
       raise ValueError("Game cannot have simultaneous nodes.")
     else:
@@ -182,8 +185,7 @@ def _play_game(game, bots, initial_actions):
       bot = bots[current_player]
       action = bot.step(state)
       action_str = state.action_to_string(current_player, action)
-      _opt_print("Player {} sampled action: {}".format(current_player,
-                                                       action_str))
+      # _opt_print("Player {} sampled action: {}".format(current_player, action_str))
 
     for i, bot in enumerate(bots):
       if i != current_player:
@@ -191,8 +193,8 @@ def _play_game(game, bots, initial_actions):
     history.append(action_str)
     state.apply_action(action)
 
-    _opt_print("Next state:\n{}".format(state))
-    _opt_print(chess.Board(fen=str(state)))
+    # _opt_print("Next state:\n{}".format(state))
+    # _opt_print(chess.Board(fen=str(state)))
 
   # Game is now done. Print return for each player
   returns = state.returns()
