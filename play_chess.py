@@ -2,7 +2,7 @@
 
     Python file to simulate a single Chess game between any two bots.
     
-    Chaneg Bot Player in the defined Flags:
+    Change Bot Player in the defined Flags:
       player 1 - play as White
       player 2 - play as Black
 """
@@ -49,8 +49,8 @@ _KNOWN_PLAYERS = [
 ]
 
 flags.DEFINE_string("game", "chess", "Name of the game.")
-flags.DEFINE_enum("player1", "ga", _KNOWN_PLAYERS, "Who controls player 1.")
-flags.DEFINE_enum("player2", "random", _KNOWN_PLAYERS, "Who controls player 2.")
+flags.DEFINE_enum("player1", "random", _KNOWN_PLAYERS, "Who controls player 1.")
+flags.DEFINE_enum("player2", "mcts_trained", _KNOWN_PLAYERS, "Who controls player 2.")
 flags.DEFINE_string("gtp_path", None, "Where to find a binary for gtp.")
 flags.DEFINE_multi_string("gtp_cmd", [], "GTP commands to run at init.")
 flags.DEFINE_string("az_path", None, "Path to an alpha_zero checkpoint. Needed by an az player.")
@@ -145,7 +145,6 @@ def _play_game(game, bots, initial_actions):
   _opt_print("Initial state:\n{}".format(state))
 
   history = []
-
   # If the 'random_first' flag is set, a random initial action is chosen
   if FLAGS.random_first:
     assert not initial_actions
@@ -164,7 +163,6 @@ def _play_game(game, bots, initial_actions):
     _opt_print("Forced action", action_str)
     _opt_print("Next state:\n{}".format(state))
     # _opt_print(chess.Board(fen=str(state)))
-
   while not state.is_terminal():
     current_player = state.current_player()
     # The state can be three different types: chance node,
@@ -177,7 +175,7 @@ def _play_game(game, bots, initial_actions):
       action_list, prob_list = zip(*outcomes)
       action = np.random.choice(action_list, p=prob_list)
       action_str = state.action_to_string(current_player, action)
-      # _opt_print("Sampled action: ", action_str)
+      _opt_print("Sampled action: ", action_str)
     elif state.is_simultaneous_node():
       raise ValueError("Game cannot have simultaneous nodes.")
     else:
@@ -185,7 +183,8 @@ def _play_game(game, bots, initial_actions):
       bot = bots[current_player]
       action = bot.step(state)
       action_str = state.action_to_string(current_player, action)
-      # _opt_print("Player {} sampled action: {}".format(current_player, action_str))
+      _opt_print("Player {} sampled action: {}".format(current_player,
+                                                       action_str))
 
     for i, bot in enumerate(bots):
       if i != current_player:
@@ -193,7 +192,7 @@ def _play_game(game, bots, initial_actions):
     history.append(action_str)
     state.apply_action(action)
 
-    # _opt_print("Next state:\n{}".format(state))
+    _opt_print("Next state:\n{}".format(state))
     # _opt_print(chess.Board(fen=str(state)))
 
   # Game is now done. Print return for each player
@@ -205,6 +204,7 @@ def _play_game(game, bots, initial_actions):
     bot.restart()
 
   return returns, history
+
 
 def main(argv):
   game = pyspiel.load_game(FLAGS.game)
