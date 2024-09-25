@@ -1,115 +1,84 @@
 import random
-import numpy as np
-import chess.pgn
-import pyspiel
-from concurrent.futures import ThreadPoolExecutor
+import chess
+import chess.engine
+import os
 
-class GeneticAlgorithmBot(pyspiel.Bot):
-    """Bot that uses a Genetic Algorithm to play chess."""
-
-    def __init__(self, game, population_size, mutation_rate, generations, evaluator, random_state=None, verbose=False):
-        pyspiel.Bot.__init__(self)
-        self._game = game
+class GeneticAlgorithmBot:
+    def __init__(self, population_size=20, generations=5, mutation_rate=0.1, engine_path='stockfish/stockfish'):
+        if not os.path.exists(engine_path):
+            raise FileNotFoundError(f"Stockfish engine not found at {engine_path}")
+        if not os.access(engine_path, os.X_OK):
+            raise PermissionError(f"Stockfish engine at {engine_path} is not executable")
         self.population_size = population_size
-        self.mutation_rate = mutation_rate
         self.generations = generations
-        self.evaluator = evaluator
-        self.verbose = verbose
-        self._random_state = random_state or np.random.RandomState()
-        self.evaluation_cache = {}
+        self.mutation_rate = mutation_rate
+        self.engine_path = engine_path
+        self.population = self.initialize_population()
 
-    def restart_at(self, state):
-        pass
+    def initialize_population(self):
+        num_actions = chess.Board().legal_moves.count()
+        return [self.random_strategy(num_actions) for _ in range(self.population_size)]
 
-    def step_with_policy(self, state):
-        """Returns bot's policy and action at given state."""
-        best_move = self.genetic_algorithm_search(state)
-        policy = [(action, (1.0 if action == best_move else 0.0))
-                  for action in state.legal_actions(state.current_player())]
-        return policy, best_move
+    def random_strategy(self, num_actions):
+        return [random.random() for _ in range(num_actions)]
+
+    def fitness(self, strategy):
+        engine = chess.engine.SimpleEngine.popen_uci(self.engine_path)
+        board = chess.Board()
+        score = 0
+        for move in strategy:
+            result = engine.play(board, chess.engine.Limit(time=0.1))
+            board.push(result.move)
+            # Evaluate the board position
+            info = engine.analyse(board, chess.engine.Limit(time=0.1))
+            score += info["score"].relative.score(mate_score=10000)  # Use a high value for mate score
+        engine.quit()
+        return score
+
+    def select_parents(self):
+        self.population.sort(key=self.fitness, reverse=True)
+        return self.population[:self.population_size // 2]
+
+    def crossover(self, parent1, parent2):
+        crossover_point = random.randint(0, len(parent1))
+        return parent1[:crossover_point] + parent2[crossover_point:]
+
+    def mutate(self, strategy):
+        for i in range(len(strategy)):
+            if random.random() < self.mutation_rate:
+                strategy[i] = random.random()
+        return strategy
+
+    def evolve(self):
+        for generation in range(self.generations):
+            parents = self.select_parents()
+            offspring = []
+            for i in range(self.population_size - len(parents)):
+                parent1, parent2 = random.sample(parents, 2)
+                child = self.crossover(parent1, parent2)
+                child = self.mutate(child)
+                offspring.append(child)
+            self.population = parents + offspring
+            print(f"Generation {generation}: Best fitness = {self.fitness(self.population[0])}")
 
     def step(self, state):
-        return self.step_with_policy(state)[1]
+        # Evolve the population before choosing an action
+        self.evolve()
+        best_strategy = max(self.population, key=self.fitness)
+        legal_actions = list(state.legal_actions())
+        action_probabilities = [best_strategy[action] for action in range(len(legal_actions))]
+        total_prob = sum(action_probabilities)
+        if total_prob <= 0:
+            return random.choice(legal_actions)
+        action_probabilities = [prob / total_prob for prob in action_probabilities]
+        action = random.choices(legal_actions, weights=action_probabilities, k=1)[0]
+        return action
 
-    def genetic_algorithm_search(self, state):
-        """Performs a Genetic Algorithm search to find the best move."""
-        population = self._initialize_population(state)
-        best_individual = None
-        best_score = float('-inf')
+    def inform_action(self, state, player_id, action):
+        """Let the bot know of the other agent's actions."""
+        action_string = state.action_to_string(player_id, action)
+        print(f"Player {player_id} took action: {action_string}")
 
-        for generation in range(self.generations):
-            scores = self._evaluate_population(state, population)
-            best_gen_score = max(scores)
-            best_gen_individual = population[np.argmax(scores)]
-
-            if best_gen_score > best_score:
-                best_score = best_gen_score
-                best_individual = best_gen_individual
-
-            selected = self._selection(population, scores)
-            offspring = self._crossover(selected)
-            population = self._mutate(offspring, state)
-
-            if self.verbose:
-                print(f"Generation {generation}: Best score {best_score}")
-
-        return best_individual
-
-    def _initialize_population(self, state):
-        """Initializes a population of random moves."""
-        legal_actions = state.legal_actions(state.current_player())
-        return [self._random_state.choice(legal_actions) for _ in range(self.population_size)]
-
-    def _evaluate_population(self, state, population):
-        """Evaluates the population of moves using parallel processing."""
-        with ThreadPoolExecutor() as executor:
-            scores = list(executor.map(lambda move: self._evaluate_move(state, move), population))
-        return scores
-
-    def _evaluate_move(self, state, move):
-        """Evaluates a single move with memoization."""
-        if move in self.evaluation_cache:
-            return self.evaluation_cache[move]
-
-        cloned_state = state.clone()
-        cloned_state.apply_action(move)
-        evaluation = self.evaluator.evaluate(cloned_state)
-
-        if isinstance(evaluation, np.ndarray):
-            evaluation = np.mean(evaluation)
-
-        self.evaluation_cache[move] = evaluation
-        return evaluation
-
-    def _selection(self, population, scores):
-        """Selects the best moves using tournament selection."""
-        selected = []
-        for _ in range(self.population_size):
-            indices = self._random_state.choice(len(population), 3)
-            tournament = [(population[i], scores[i]) for i in indices]
-            winner = max(tournament, key=lambda x: x[1])
-            selected.append(winner[0])
-        return selected
-
-    def _crossover(self, selected):
-        """Performs crossover to generate new moves."""
-        offspring = []
-        for _ in range(self.population_size):
-            parent1, parent2 = self._random_state.choice(selected, 2)
-            offspring.append(self._crossover_moves(parent1, parent2))
-        return offspring
-
-    def _crossover_moves(self, move1, move2):
-        """Combines two moves to create a new move."""
-        return self._random_state.choice([move1, move2])
-
-    def _mutate(self, offspring, state):
-        """Mutates the offspring to maintain diversity with adaptive mutation rate."""
-        legal_actions = state.legal_actions(state.current_player())
-        diversity = len(set(offspring)) / len(offspring)
-        adaptive_mutation_rate = self.mutation_rate * (1 - diversity)
-
-        for i in range(len(offspring)):
-            if self._random_state.rand() < adaptive_mutation_rate:
-                offspring[i] = self._random_state.choice(legal_actions)
-        return offspring
+# if __name__ == "__main__":
+#     ga_bot = GeneticAlgorithmBot()
+#     ga_bot.evolve()

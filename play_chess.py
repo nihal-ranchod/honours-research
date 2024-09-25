@@ -49,8 +49,8 @@ _KNOWN_PLAYERS = [
 ]
 
 flags.DEFINE_string("game", "chess", "Name of the game.")
-flags.DEFINE_enum("player1", "random", _KNOWN_PLAYERS, "Who controls player 1.")
-flags.DEFINE_enum("player2", "mcts_trained", _KNOWN_PLAYERS, "Who controls player 2.")
+flags.DEFINE_enum("player1", "ga", _KNOWN_PLAYERS, "Who controls player 1.")
+flags.DEFINE_enum("player2", "random", _KNOWN_PLAYERS, "Who controls player 2.")
 flags.DEFINE_string("gtp_path", None, "Where to find a binary for gtp.")
 flags.DEFINE_multi_string("gtp_cmd", [], "GTP commands to run at init.")
 flags.DEFINE_string("az_path", None, "Path to an alpha_zero checkpoint. Needed by an az player.")
@@ -119,13 +119,7 @@ def _init_bot(bot_type, game, player_id):
                           batch_size=FLAGS.batch_size)
     return agent
   if bot_type == "ga":
-    evaluator = mcts.RandomRolloutEvaluator(n_rollouts=10)
-    return GeneticAlgorithmBot(game, 
-                               population_size=50, 
-                               mutation_rate=0.1, 
-                               generations=10, 
-                               evaluator=evaluator, 
-                               random_state=rng)
+    return GeneticAlgorithmBot()
   if bot_type == "random":
     return uniform_random.UniformRandomBot(player_id, rng)
   if bot_type == "human":
