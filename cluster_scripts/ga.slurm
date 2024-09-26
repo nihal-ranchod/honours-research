@@ -5,4 +5,7 @@
 #SBATCH -N 1 ## Number of nodes
 #SBATCH -n 1 ## Number of cores per node
 
+source ~/.bashrc
+conda activate research
+
 python play_chess.py --train_ga
