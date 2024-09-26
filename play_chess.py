@@ -14,7 +14,6 @@ import chess
 from absl import app
 from absl import flags
 import numpy as np
-import matplotlib.pyplot as plt
 
 # from open_spiel.python.algorithms import mcts
 from open_spiel.python.algorithms.alpha_zero import evaluator as az_evaluator
@@ -27,6 +26,7 @@ import pyspiel
 # Add created Agents
 import mcts_algorithm as mcts
 from ga_algorithm import GeneticAlgorithmBot
+import matplotlib.pyplot as plt
 
 _KNOWN_PLAYERS = [
     # A vanilla Monte Carlo Tree Search agent.
@@ -68,6 +68,7 @@ flags.DEFINE_integer("population_size", 100, "Size of the population.")
 flags.DEFINE_float("mutation_rate", 0.3, "Mutation rate.")
 flags.DEFINE_float("crossover_rate", 0.7, "Crossover rate.")
 flags.DEFINE_integer("num_generations", 10, "Number of generations.")
+
 flags.DEFINE_bool("train_ga", False, "Whether to train a new GA model or load a pre-trained one.")
 flags.DEFINE_string("ga_weights_file", "ga_weights.pkl", "File to save/load GA weights.")
 
@@ -106,9 +107,9 @@ def _init_bot(bot_type, game, player_id):
   if bot_type == "ga":
     ga_bot = GeneticAlgorithmBot()
     if FLAGS.train_ga:
-      ga_bot.train(num_games=200)
+      ga_bot.train(num_games=200)  # Increased number of games for better evaluation
       ga_bot.save_weights(FLAGS.ga_weights_file)
-      plt.show() 
+      plt.show()  # This will display the training progress plot
     else:
       try:
         ga_bot.load_weights(FLAGS.ga_weights_file)
