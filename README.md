@@ -23,17 +23,22 @@ pip install pyspiel
 - Human Player: `human`
 - Vanilla MCTS: `mcts`
 - Trained MCTS: `mcts_trained`
+- Genetic Algorithm Agent: `ga`
+- Neural Fictitous Self-Play Agent: `nfsp`
 
     - White player: `bot1`
     - Black player: `bot2`
 
 ```bash
-python3 mcts_play.py --player1=bot1 --player2=bot2
+python3 play_chess.py --player1=bot1 --player2=bot2
 ```
 
 2. Example Case:
 ```bash
-python3 mcts_play.py --player1=mcts --player2=mcts_trained
+python3 play_chess.py --player1=mcts --player2=mcts_trained
 ```
 
-
+### To train the Genetic Algorithm:
+```bash
+python3 play_chess.py --train_ga
+```
