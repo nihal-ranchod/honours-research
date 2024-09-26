@@ -14,6 +14,7 @@ import chess
 from absl import app
 from absl import flags
 import numpy as np
+import matplotlib.pyplot as plt
 
 # from open_spiel.python.algorithms import mcts
 from open_spiel.python.algorithms.alpha_zero import evaluator as az_evaluator
@@ -25,9 +26,7 @@ import pyspiel
 
 # Add created Agents
 import mcts_algorithm as mcts
-from nfsp_algorithm import NFSPAgent
-#from ga_algorithm import GeneticAlgorithmBot
-from ga import GeneticAlgorithmBot
+from ga_algorithm import GeneticAlgorithmBot
 
 _KNOWN_PLAYERS = [
     # A vanilla Monte Carlo Tree Search agent.
@@ -115,15 +114,17 @@ def _init_bot(bot_type, game, player_id):
   if bot_type == "ga":
     ga_bot = GeneticAlgorithmBot()
     if FLAGS.train_ga:
-      ga_bot.train(num_games=100)
+      ga_bot.train(num_games=200)
       ga_bot.save_weights(FLAGS.ga_weights_file)
+      plt.show() 
     else:
       try:
         ga_bot.load_weights(FLAGS.ga_weights_file)
       except FileNotFoundError:
         print(f"Pre-trained weights not found. Training new model...")
-        ga_bot.train(num_games=100)
+        ga_bot.train(num_games=200)
         ga_bot.save_weights(FLAGS.ga_weights_file)
+        plt.show()  # This will display the training progress plot
     return ga_bot
   if bot_type == "random":
     return uniform_random.UniformRandomBot(player_id, rng)
