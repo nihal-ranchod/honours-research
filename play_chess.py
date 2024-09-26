@@ -64,18 +64,10 @@ flags.DEFINE_bool("solve", True, "Whether to use MCTS-Solver.")
 flags.DEFINE_bool("quiet", False, "Don't show the moves as they're played.")
 flags.DEFINE_bool("verbose", False, "Show the MCTS stats of possible moves.")
 
-# NFSP flags
-flags.DEFINE_float("epsilon", 0.1, "Exploration rate for NFSP.")
-flags.DEFINE_float("learning_rate", 1e-2, "Learning rate for NFSP.")
-flags.DEFINE_float("discount_factor", 0.995, "Discount factor for NFSP.")
-flags.DEFINE_integer("replay_buffer_size", 10000, "Size of the replay buffer.")
-flags.DEFINE_integer("batch_size", 64, "Batch size for training.")
-
 flags.DEFINE_integer("population_size", 100, "Size of the population.")
 flags.DEFINE_float("mutation_rate", 0.3, "Mutation rate.")
 flags.DEFINE_float("crossover_rate", 0.7, "Crossover rate.")
 flags.DEFINE_integer("num_generations", 10, "Number of generations.")
-
 flags.DEFINE_bool("train_ga", False, "Whether to train a new GA model or load a pre-trained one.")
 flags.DEFINE_string("ga_weights_file", "ga_weights.pkl", "File to save/load GA weights.")
 
