@@ -26,7 +26,8 @@ import pyspiel
 # Add created Agents
 import mcts_algorithm as mcts
 from nfsp_algorithm import NFSPAgent
-from ga_algorithm import GeneticAlgorithmBot
+#from ga_algorithm import GeneticAlgorithmBot
+from ga import GeneticAlgorithmBot
 
 _KNOWN_PLAYERS = [
     # A vanilla Monte Carlo Tree Search agent.
@@ -71,6 +72,14 @@ flags.DEFINE_float("discount_factor", 0.995, "Discount factor for NFSP.")
 flags.DEFINE_integer("replay_buffer_size", 10000, "Size of the replay buffer.")
 flags.DEFINE_integer("batch_size", 64, "Batch size for training.")
 
+flags.DEFINE_integer("population_size", 100, "Size of the population.")
+flags.DEFINE_float("mutation_rate", 0.3, "Mutation rate.")
+flags.DEFINE_float("crossover_rate", 0.7, "Crossover rate.")
+flags.DEFINE_integer("num_generations", 10, "Number of generations.")
+
+flags.DEFINE_bool("train_ga", False, "Whether to train a new GA model or load a pre-trained one.")
+flags.DEFINE_string("ga_weights_file", "ga_weights.pkl", "File to save/load GA weights.")
+
 FLAGS = flags.FLAGS
 
 # print messages if the quiet flag is not set
@@ -103,23 +112,19 @@ def _init_bot(bot_type, game, player_id):
         random_state=rng,
         solve=FLAGS.solve,
         verbose=FLAGS.verbose)
-  if bot_type == "nfsp":
-    # Create an initial state to get the size of the observation tensor
-    initial_state = game.new_initial_state()
-    observation_size = len(initial_state.observation_tensor())
-    num_actions = len(initial_state.legal_actions())
-
-    policy_network = NFSPAgent.build_network((observation_size,), num_actions)
-    value_network = NFSPAgent.build_network((observation_size,), 1)
-        
-    agent = NFSPAgent(game, policy_network, value_network, 
-                          epsilon=FLAGS.epsilon, learning_rate=FLAGS.learning_rate, 
-                          discount_factor=FLAGS.discount_factor, 
-                          replay_buffer_size=FLAGS.replay_buffer_size, 
-                          batch_size=FLAGS.batch_size)
-    return agent
   if bot_type == "ga":
-    return GeneticAlgorithmBot()
+    ga_bot = GeneticAlgorithmBot()
+    if FLAGS.train_ga:
+      ga_bot.train(num_games=100)
+      ga_bot.save_weights(FLAGS.ga_weights_file)
+    else:
+      try:
+        ga_bot.load_weights(FLAGS.ga_weights_file)
+      except FileNotFoundError:
+        print(f"Pre-trained weights not found. Training new model...")
+        ga_bot.train(num_games=100)
+        ga_bot.save_weights(FLAGS.ga_weights_file)
+    return ga_bot
   if bot_type == "random":
     return uniform_random.UniformRandomBot(player_id, rng)
   if bot_type == "human":
@@ -223,6 +228,10 @@ def main(argv):
   except (KeyboardInterrupt, EOFError):
     game_num -= 1
     print("Caught a KeyboardInterrupt, stopping early.")
+  finally:
+        for bot in bots:
+            if hasattr(bot, 'close_engine'):
+                bot.close_engine()
   print("Number of games played:", game_num + 1)
   print("Number of distinct games played:", len(histories))
   print("Players:", FLAGS.player1, FLAGS.player2)
