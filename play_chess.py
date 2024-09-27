@@ -14,6 +14,7 @@ import chess
 from absl import app
 from absl import flags
 import numpy as np
+import os
 
 # from open_spiel.python.algorithms import mcts
 from open_spiel.python.algorithms.alpha_zero import evaluator as az_evaluator
@@ -26,6 +27,10 @@ import pyspiel
 # Add created Agents
 import mcts_algorithm as mcts
 from ga_algorithm import GeneticAlgorithmBot
+from nfsp_algorithm import NFSPAgent
+import tensorflow.compat.v1 as tf
+
+tf.disable_v2_behavior()
 import matplotlib.pyplot as plt
 
 _KNOWN_PLAYERS = [
@@ -49,7 +54,7 @@ _KNOWN_PLAYERS = [
 ]
 
 flags.DEFINE_string("game", "chess", "Name of the game.")
-flags.DEFINE_enum("player1", "ga", _KNOWN_PLAYERS, "Who controls player 1.")
+flags.DEFINE_enum("player1", "nfsp", _KNOWN_PLAYERS, "Who controls player 1.")
 flags.DEFINE_enum("player2", "random", _KNOWN_PLAYERS, "Who controls player 2.")
 flags.DEFINE_string("gtp_path", None, "Where to find a binary for gtp.")
 flags.DEFINE_multi_string("gtp_cmd", [], "GTP commands to run at init.")
@@ -71,6 +76,9 @@ flags.DEFINE_integer("num_generations", 10, "Number of generations.")
 
 flags.DEFINE_bool("train_ga", False, "Whether to train a new GA model or load a pre-trained one.")
 flags.DEFINE_string("ga_weights_file", "ga_weights.pkl", "File to save/load GA weights.")
+
+flags.DEFINE_bool("train_nfsp", False, "Whether to train a new NFSP model or load a pre-trained one.")
+flags.DEFINE_string("nfsp_weights_file", "nfsp_weights.pkl", "File to save/load NFSP weights.")
 
 FLAGS = flags.FLAGS
 
@@ -119,6 +127,28 @@ def _init_bot(bot_type, game, player_id):
         ga_bot.save_weights(FLAGS.ga_weights_file)
         plt.show()  # This will display the training progress plot
     return ga_bot
+  if bot_type == "nfsp":
+    nfsp_agent = NFSPAgent(game, player_id)
+    if FLAGS.train_nfsp:
+        returns = nfsp_agent.train(num_episodes=10000)
+        nfsp_agent.save(FLAGS.nfsp_weights_file)
+        
+        plt.figure(figsize=(10, 6))
+        plt.plot(returns)
+        plt.xlabel('Episode')
+        plt.ylabel('Return')
+        plt.title('NFSP Training Progress')
+
+        plot_dir = "plots"
+        os.makedirs(plot_dir, exist_ok=True)
+        plot_path = os.path.join(plot_dir, "nfsp_training_progress.png")
+        plt.savefig(plot_path)
+        plt.close() 
+        
+        print(f"Training plot saved to {plot_path}")
+    else:
+        nfsp_agent.restore(FLAGS.nfsp_weights_file)
+    return nfsp_agent
   if bot_type == "random":
     return uniform_random.UniformRandomBot(player_id, rng)
   if bot_type == "human":
