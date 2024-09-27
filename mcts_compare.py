@@ -26,7 +26,7 @@ _KNOWN_PLAYERS = [
 flags.DEFINE_string("game", "chess", "Name of the game.")
 flags.DEFINE_enum("player1", "mcts", _KNOWN_PLAYERS, "Who controls player 1.")
 flags.DEFINE_enum("player2", "random", _KNOWN_PLAYERS, "Who controls player 2.")
-flags.DEFINE_integer("num_games", 30, "Number of games to play between each pair of bots.")
+flags.DEFINE_integer("num_games", 40, "Number of games to play between each pair of bots.")
 flags.DEFINE_integer("rollout_count", 10, "Number of rollouts for the random rollout evaluator.")
 flags.DEFINE_float("uct_c", 2.0, "UCT exploration constant.")
 flags.DEFINE_integer("max_simulations", 100, "Maximum number of MCTS simulations.")
@@ -44,7 +44,8 @@ elo_ratings = {"bot1": 1500, "bot2": 1500}
 
 def _opt_print(*args, **kwargs):
     if not FLAGS.quiet:
-        print(*args, **kwargs)
+        pass
+        # print(*args, **kwargs)
 
 def _elo_update(player_rating, opponent_rating, result, k=None):
     """
@@ -79,7 +80,7 @@ def _init_bot(bot_type, game, player_id):
             solve=FLAGS.solve,
             verbose=FLAGS.verbose)
     if bot_type == "mcts_trained":
-        pgn_file = "PGN_Data/training_data.pgn"
+        pgn_file = "PGN_Data/lichess_db_standard_rated_2013-01.pgn"
         evaluator = mcts.RandomRolloutEvaluator(FLAGS.rollout_count, rng)
         return mcts.MCTSWithTraining(
             game,
@@ -199,17 +200,17 @@ def main(argv):
                 match_results["final_elo_bot1"] = elo_ratings["bot1"]
                 match_results["final_elo_bot2"] = elo_ratings["bot2"]
                 results[f"{bot1_type}_vs_{bot2_type}"] = match_results
-                _opt_print(f"Results for {bot1_type} vs {bot2_type}: {match_results}")
+                # _opt_print(f"Results for {bot1_type} vs {bot2_type}: {match_results}")
     
-    with open("evaluation_results2.txt", "w") as f:
+    with open("evaluation_results_standard_chess.txt", "w") as f:
         for match, result in results.items():
             f.write(f"{match}:\n")
             for key, value in result.items():
                 f.write(f"  {key}: {value}\n")
 
-    _opt_print("\nFinal Elo Ratings:")
-    _opt_print(f"Bot1 Elo Rating: {elo_ratings['bot1']}")
-    _opt_print(f"Bot2 Elo Rating: {elo_ratings['bot2']}")
+    # _opt_print("\nFinal Elo Ratings:")
+    # _opt_print(f"Bot1 Elo Rating: {elo_ratings['bot1']}")
+    # _opt_print(f"Bot2 Elo Rating: {elo_ratings['bot2']}")
 
 if __name__ == "__main__":
     app.run(main)
