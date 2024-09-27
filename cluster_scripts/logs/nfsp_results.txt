@@ -4,3 +4,13 @@
 2024-09-27 16:07:35.611874: E external/local_xla/xla/stream_executor/cuda/cuda_dnn.cc:8454] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
 2024-09-27 16:07:35.816579: E external/local_xla/xla/stream_executor/cuda/cuda_blas.cc:1452] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
 2024-09-27 16:07:49.562376: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+/home-mscluster/nranchod/miniconda3/envs/research/lib/python3.10/site-packages/open_spiel/python/algorithms/alpha_zero/model.py:27: UserWarning: Python AlphaZero has known issues when using Keras 3 and may be removed in a future version unless fixed. See OpenSpiel github issue #1206 for details.
+  warnings.warn(
+WARNING:tensorflow:From /home-mscluster/nranchod/miniconda3/envs/research/lib/python3.10/site-packages/tensorflow/python/compat/v2_compat.py:98: disable_resource_variables (from tensorflow.python.ops.resource_variables_toggle) is deprecated and will be removed in a future version.
+Instructions for updating:
+non-resource variables are not supported in the long term
+2024-09-27 16:08:09.708669: W tensorflow/core/common_runtime/gpu/gpu_device.cc:2343] Cannot dlopen some GPU libraries. Please make sure the missing libraries mentioned above are installed properly if you would like to use GPU. Follow the guide at https://www.tensorflow.org/install/gpu for how to download and setup the required libraries for your platform.
+Skipping registering GPU devices...
+I0927 16:08:09.712180 139943416992832 rl_environment.py:185] Using game instance: chess
+2024-09-27 16:08:10.067591: I tensorflow/compiler/mlir/mlir_graph_optimization_pass.cc:388] MLIR V1 optimization pass is not enabled
+2024-09-27 16:08:10.447853: W tensorflow/c/c_api.cc:305] Operation '{name:'mlp/bias_2/Adam_1/Assign' id:430 op device:{requested: '', assigned: ''} def:{{{node mlp/bias_2/Adam_1/Assign}} = Assign[T=DT_FLOAT, _class=["loc:@mlp/bias_2"], _has_manual_control_dependencies=true, use_locking=true, validate_shape=true](mlp/bias_2/Adam_1, mlp/bias_2/Adam_1/Initializer/zeros)}}' was changed by setting attribute after it was run by a session. This mutation will have no effect, and will trigger an error in the future. Either don't modify nodes after running them or create a new session.
