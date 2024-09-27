@@ -1,27 +1,19 @@
 import os
 import numpy as np
 import tensorflow.compat.v1 as tf
-from open_spiel.python.algorithms import nfsp
 from open_spiel.python import rl_environment
+from open_spiel.python.algorithms import nfsp
+import pyspiel
 
 tf.disable_v2_behavior()
 
 class NFSPAgent:
-    def __init__(self, game, player_id, hidden_layers_sizes=[128, 128], reservoir_buffer_capacity=2e6, anticipatory_param=0.1, batch_size=128, rl_learning_rate=0.01, sl_learning_rate=0.01, min_buffer_size_to_learn=1000, learn_every=64, optimizer_str="adam", epsilon_decay_duration=int(1e6), epsilon_start=0.06, epsilon_end=0.001):
+    def __init__(self, game, player_id, hidden_layers_sizes=[128, 128], reservoir_buffer_capacity=2e6, anticipatory_param=0.1):
         self.game = game
         self.player_id = player_id
         self.hidden_layers_sizes = hidden_layers_sizes
         self.reservoir_buffer_capacity = reservoir_buffer_capacity
         self.anticipatory_param = anticipatory_param
-        self.batch_size = batch_size
-        self.rl_learning_rate = rl_learning_rate
-        self.sl_learning_rate = sl_learning_rate
-        self.min_buffer_size_to_learn = min_buffer_size_to_learn
-        self.learn_every = learn_every
-        self.optimizer_str = optimizer_str
-        self.epsilon_decay_duration = epsilon_decay_duration
-        self.epsilon_start = epsilon_start
-        self.epsilon_end = epsilon_end
 
         self.env = rl_environment.Environment(game)
         self.info_state_size = self.env.observation_spec()["info_state"][0]
@@ -29,30 +21,91 @@ class NFSPAgent:
 
         self.sess = tf.Session()
         self._init_agent()
-
-    def _init_agent(self):
-        self.agent = nfsp.NFSP(
-            session=self.sess,
-            player_id=self.player_id,
-            state_representation_size=self.info_state_size,
-            num_actions=self.num_actions,
-            hidden_layers_sizes=self.hidden_layers_sizes,
-            reservoir_buffer_capacity=self.reservoir_buffer_capacity,
-            anticipatory_param=self.anticipatory_param,
-            batch_size=self.batch_size,
-            rl_learning_rate=self.rl_learning_rate,
-            sl_learning_rate=self.sl_learning_rate,
-            min_buffer_size_to_learn=self.min_buffer_size_to_learn,
-            learn_every=self.learn_every,
-            optimizer_str=self.optimizer_str,
-            epsilon_decay_duration=self.epsilon_decay_duration,
-            epsilon_start=self.epsilon_start,
-            epsilon_end=self.epsilon_end
-        )
         self.sess.run(tf.global_variables_initializer())
 
-    def step(self, time_step):
-        return self.agent.step(time_step)
+    def _init_agent(self):
+        try:
+            self.agent = nfsp.NFSP(
+                session=self.sess,
+                player_id=self.player_id,
+                state_representation_size=self.info_state_size,
+                num_actions=self.num_actions,
+                hidden_layers_sizes=self.hidden_layers_sizes,
+                reservoir_buffer_capacity=self.reservoir_buffer_capacity,
+                anticipatory_param=self.anticipatory_param
+            )
+        except Exception as e:
+            print(f"Error initializing NFSP agent: {e}")
+            raise
+
+    def step(self, time_step_or_state):
+        try:
+            if isinstance(time_step_or_state, rl_environment.TimeStep):
+                return self.agent.step(time_step_or_state)
+            elif isinstance(time_step_or_state, pyspiel.State):
+                info_state = time_step_or_state.observation_tensor(self.player_id)
+                legal_actions = time_step_or_state.legal_actions(self.player_id)
+                
+                print(f"Info state shape: {np.array(info_state).shape}")
+                print(f"Legal actions: {legal_actions}")
+                
+                # Create a more complete dummy TimeStep object
+                dummy_time_step = rl_environment.TimeStep(
+                    observations={
+                        "info_state": [info_state],
+                        "legal_actions": [legal_actions],
+                        "current_player": self.player_id,
+                        "serialized_state": time_step_or_state.serialize()
+                    },
+                    rewards=[0.0],  # Add a dummy reward
+                    discounts=[1.0],  # Add a dummy discount
+                    step_type=rl_environment.StepType.MID
+                )
+
+                if np.random.rand() < self.anticipatory_param:
+                    # Use best response policy (RL agent)
+                    rl_step = self.agent._rl_agent.step(dummy_time_step)
+                    action = rl_step.action
+                else:
+                    # Use average policy (SL policy)
+                    action_and_probs = self.agent._act(info_state, legal_actions)
+                    print(f"Action and probabilities type: {type(action_and_probs)}")
+                    print(f"Action and probabilities content: {action_and_probs}")
+                    
+                    if isinstance(action_and_probs, tuple) and len(action_and_probs) == 2:
+                        action, probs = action_and_probs
+                        print(f"Action: {action}")
+                        print(f"Probabilities type: {type(probs)}")
+                        print(f"Probabilities content: {probs}")
+                        
+                        if isinstance(probs, np.ndarray):
+                            if len(probs.shape) > 1:
+                                print(f"Probabilities shape before flatten: {probs.shape}")
+                                probs = probs.flatten()
+                            
+                            print(f"Probabilities shape after processing: {probs.shape}")
+                            print(f"Probabilities after processing: {probs}")
+                            
+                            # Normalize probabilities
+                            probs = probs / np.sum(probs)
+                            
+                            # Choose action based on probabilities
+                            action = np.random.choice(len(probs), p=probs)
+                    else:
+                        raise ValueError(f"Unexpected return type from _act: {type(action_and_probs)}")
+                
+                # Ensure action is valid
+                if action is None or action not in legal_actions:
+                    print(f"Invalid action {action}, choosing random legal action")
+                    action = np.random.choice(legal_actions)
+                
+                print(f"Chosen action: {action}")
+                return action
+            else:
+                raise ValueError(f"Unexpected input type: {type(time_step_or_state)}")
+        except Exception as e:
+            print(f"Error in step method: {e}")
+            raise
 
     def action_to_string(self, action):
         return self.env.get_state.action_to_string(self.player_id, action)
@@ -87,4 +140,19 @@ class NFSPAgent:
         return returns
 
     def __del__(self):
-        self.sess.close()
+        if hasattr(self, 'sess'):
+            self.sess.close()
+
+    def inform_action(self, state, player_id, action):
+        """Let the bot know of the other agent's actions."""
+        action_string = state.action_to_string(player_id, action)
+        print(f"Player {player_id} took action: {action_string}")
+
+    def restart(self):
+        """Reset the agent's state for a new game."""
+        # Reset any necessary state variables
+        # For example, you might want to clear any game-specific memory
+        if hasattr(self.agent, '_prev_timestep'):
+            self.agent._prev_timestep = None
+        if hasattr(self.agent, '_prev_action'):
+            self.agent._prev_action = None
