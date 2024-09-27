@@ -6,7 +6,7 @@ import pickle
 import matplotlib.pyplot as plt
 
 class GeneticAlgorithmBot:
-    def __init__(self, population_size=100, generations=50, mutation_rate=0.05, tournament_size=5):
+    def __init__(self, population_size=100, generations=50, mutation_rate=0.1, tournament_size=10):
         self.population_size = population_size
         self.generations = generations
         self.mutation_rate = mutation_rate
@@ -35,14 +35,12 @@ class GeneticAlgorithmBot:
 
     def mutate(self, weights: np.ndarray) -> np.ndarray:
         mask = np.random.random(weights.shape) < self.mutation_rate
-        mutations = np.random.normal(0, 0.1, weights.shape)
-        return weights + mask * mutations
+        mutations = np.random.normal(0, 0.2, weights.shape)  # Increased standard deviation
+        return np.clip(weights + mask * mutations, -1, 1)  # Clip values to [-1, 1]
 
     def crossover(self, parent1: np.ndarray, parent2: np.ndarray) -> np.ndarray:
-        child = parent1.copy()
-        mask = np.random.random(parent1.shape) < 0.5
-        child[mask] = parent2[mask]
-        return child
+        alpha = np.random.random(parent1.shape)
+        return alpha * parent1 + (1 - alpha) * parent2
 
     def tournament_selection(self, population: List[np.ndarray], fitness_scores: List[float]) -> np.ndarray:
         selected = random.sample(list(zip(population, fitness_scores)), self.tournament_size)
@@ -51,9 +49,10 @@ class GeneticAlgorithmBot:
     def evolve_population(self, population: List[np.ndarray], fitness_scores: List[float]) -> List[np.ndarray]:
         new_population = []
         
-        # Elitism: keep the best individual
-        best_idx = fitness_scores.index(max(fitness_scores))
-        new_population.append(population[best_idx])
+        # Elitism: keep the top 10% of individuals
+        elite_count = self.population_size // 10
+        elite_indices = np.argsort(fitness_scores)[-elite_count:]
+        new_population.extend([population[i] for i in elite_indices])
         
         while len(new_population) < self.population_size:
             parent1 = self.tournament_selection(population, fitness_scores)
@@ -82,6 +81,11 @@ class GeneticAlgorithmBot:
             self.training_metrics['best_fitness'].append(best_fitness)
             self.training_metrics['avg_fitness'].append(avg_fitness)
             print(f"Generation {generation + 1}: Best Fitness = {best_fitness:.2f}, Avg Fitness = {avg_fitness:.2f}")
+            
+            # Early stopping if no improvement for 10 generations
+            if generation > 10 and best_fitness <= max(self.training_metrics['best_fitness'][-10:]):
+                print(f"Early stopping at generation {generation + 1}")
+                break
         
         self.position_weights = population[fitness_scores.index(max(fitness_scores))]  # Use the best individual
         self.plot_training_metrics()
