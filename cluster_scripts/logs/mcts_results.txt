@@ -1,10 +1,14 @@
-2024-09-27 16:04:46.377053: I external/local_xla/xla/tsl/cuda/cudart_stub.cc:32] Could not find cuda drivers on your machine, GPU will not be used.
-2024-09-27 16:04:46.387450: I external/local_xla/xla/tsl/cuda/cudart_stub.cc:32] Could not find cuda drivers on your machine, GPU will not be used.
-2024-09-27 16:04:46.420798: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:485] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
-2024-09-27 16:04:46.475009: E external/local_xla/xla/stream_executor/cuda/cuda_dnn.cc:8454] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
-2024-09-27 16:04:46.491509: E external/local_xla/xla/stream_executor/cuda/cuda_blas.cc:1452] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
-2024-09-27 16:04:57.252662: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+2024-09-30 21:05:33.932840: I external/local_xla/xla/tsl/cuda/cudart_stub.cc:32] Could not find cuda drivers on your machine, GPU will not be used.
+2024-09-30 21:05:35.732051: I external/local_xla/xla/tsl/cuda/cudart_stub.cc:32] Could not find cuda drivers on your machine, GPU will not be used.
+2024-09-30 21:05:36.590932: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:485] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+2024-09-30 21:05:37.307952: E external/local_xla/xla/stream_executor/cuda/cuda_dnn.cc:8454] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+2024-09-30 21:05:37.524289: E external/local_xla/xla/stream_executor/cuda/cuda_blas.cc:1452] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+2024-09-30 21:05:56.332539: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
 /home-mscluster/nranchod/miniconda3/envs/research/lib/python3.10/site-packages/open_spiel/python/algorithms/alpha_zero/model.py:27: UserWarning: Python AlphaZero has known issues when using Keras 3 and may be removed in a future version unless fixed. See OpenSpiel github issue #1206 for details.
   warnings.warn(
-2024-09-27 16:05:06.658004: W tensorflow/core/common_runtime/gpu/gpu_device.cc:2343] Cannot dlopen some GPU libraries. Please make sure the missing libraries mentioned above are installed properly if you would like to use GPU. Follow the guide at https://www.tensorflow.org/install/gpu for how to download and setup the required libraries for your platform.
-Skipping registering GPU devices...
+2024-09-30 21:06:19.848998: E external/local_xla/xla/stream_executor/cuda/cuda_driver.cc:266] failed call to cuInit: CUDA_ERROR_INVALID_DEVICE: invalid device ordinal
+2024-09-30 21:06:19.849120: I external/local_xla/xla/stream_executor/cuda/cuda_diagnostics.cc:135] retrieving CUDA diagnostic information for host: mscluster35.ms.wits.ac.za
+2024-09-30 21:06:19.849145: I external/local_xla/xla/stream_executor/cuda/cuda_diagnostics.cc:142] hostname: mscluster35.ms.wits.ac.za
+2024-09-30 21:06:19.849278: I external/local_xla/xla/stream_executor/cuda/cuda_diagnostics.cc:166] libcuda reported version is: 525.147.5
+2024-09-30 21:06:19.849315: I external/local_xla/xla/stream_executor/cuda/cuda_diagnostics.cc:170] kernel reported version is: 525.147.5
+2024-09-30 21:06:19.849325: I external/local_xla/xla/stream_executor/cuda/cuda_diagnostics.cc:249] kernel version seems to match DSO: 525.147.5
