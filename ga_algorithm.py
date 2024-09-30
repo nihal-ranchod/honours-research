@@ -15,38 +15,105 @@ class GeneticAlgorithmBot:
             chess.PAWN: 1, chess.KNIGHT: 3, chess.BISHOP: 3,
             chess.ROOK: 5, chess.QUEEN: 9, chess.KING: 0
         }
-        self.position_weights = self._initialize_position_weights()
+        self.piece_square_tables = self._initialize_piece_square_tables()
+        self.endgame_weights = self._initialize_endgame_weights()
+        self.mobility_weight = np.random.uniform(0, 0.1)
+        self.king_safety_weight = np.random.uniform(0, 0.1)
         self.training_metrics = {'best_fitness': [], 'avg_fitness': []}
 
-    def _initialize_position_weights(self) -> np.ndarray:
-        return np.random.uniform(-1, 1, (6, 8, 8))
+    def _initialize_piece_square_tables(self):
+        # Initialize piece-square tables for each piece type
+        return {piece: np.random.uniform(-1, 1, (8, 8)) for piece in self.piece_values}
+
+    def _initialize_endgame_weights(self):
+        # Initialize endgame weights
+        return np.random.uniform(0, 1, 6)
 
     def evaluate_board(self, board: chess.Board) -> float:
         score = 0
+        piece_count = sum(len(board.pieces(piece_type, color)) 
+                          for piece_type in chess.PIECE_TYPES 
+                          for color in [chess.WHITE, chess.BLACK])
+        
         for square in chess.SQUARES:
             piece = board.piece_at(square)
             if piece:
                 value = self.piece_values[piece.piece_type]
                 color_multiplier = 1 if piece.color == chess.WHITE else -1
                 row, col = divmod(square, 8)
-                position_value = self.position_weights[piece.piece_type - 1][row][col]
+                if piece.color == chess.BLACK:
+                    row, col = 7 - row, col
+                position_value = self.piece_square_tables[piece.piece_type][row][col]
                 score += color_multiplier * (value + position_value)
+
+        # Evaluate mobility
+        white_mobility = len(list(board.legal_moves))
+        board.turn = chess.BLACK
+        black_mobility = len(list(board.legal_moves))
+        board.turn = chess.WHITE
+        score += self.mobility_weight * (white_mobility - black_mobility)
+
+        # Evaluate king safety
+        score += self.king_safety_weight * (self._evaluate_king_safety(board, chess.WHITE) - 
+                                            self._evaluate_king_safety(board, chess.BLACK))
+
+        # Apply endgame weights
+        if piece_count <= 10:
+            endgame_score = self._evaluate_endgame(board)
+            score = 0.7 * score + 0.3 * endgame_score
+
         return score
 
-    def mutate(self, weights: np.ndarray) -> np.ndarray:
-        mask = np.random.random(weights.shape) < self.mutation_rate
-        mutations = np.random.normal(0, 0.2, weights.shape)  # Increased standard deviation
-        return np.clip(weights + mask * mutations, -1, 1)  # Clip values to [-1, 1]
+    def _evaluate_king_safety(self, board: chess.Board, color: chess.Color) -> float:
+        king_square = board.king(color)
+        if king_square is None:
+            return 0
+        
+        safety_score = 0
+        for square in chess.SQUARES:
+            if chess.square_distance(king_square, square) <= 2:
+                piece = board.piece_at(square)
+                if piece and piece.color == color:
+                    safety_score += 1
+        return safety_score
 
-    def crossover(self, parent1: np.ndarray, parent2: np.ndarray) -> np.ndarray:
-        alpha = np.random.random(parent1.shape)
-        return alpha * parent1 + (1 - alpha) * parent2
+    def _evaluate_endgame(self, board: chess.Board) -> float:
+        score = 0
+        for piece_type in chess.PIECE_TYPES:
+            white_count = len(board.pieces(piece_type, chess.WHITE))
+            black_count = len(board.pieces(piece_type, chess.BLACK))
+            score += self.endgame_weights[piece_type - 1] * (white_count - black_count)
+        return score
 
-    def tournament_selection(self, population: List[np.ndarray], fitness_scores: List[float]) -> np.ndarray:
+    def mutate(self, weights: dict) -> dict:
+        mutated_weights = {}
+        for key, value in weights.items():
+            if isinstance(value, np.ndarray):
+                mask = np.random.random(value.shape) < self.mutation_rate
+                mutations = np.random.normal(0, 0.2, value.shape)
+                mutated_weights[key] = np.clip(value + mask * mutations, -1, 1)
+            elif isinstance(value, (float, int)):
+                if random.random() < self.mutation_rate:
+                    mutated_weights[key] = np.clip(value + random.gauss(0, 0.2), 0, 1)
+                else:
+                    mutated_weights[key] = value
+        return mutated_weights
+
+    def crossover(self, parent1: dict, parent2: dict) -> dict:
+        child = {}
+        for key in parent1.keys():
+            if isinstance(parent1[key], np.ndarray):
+                alpha = np.random.random(parent1[key].shape)
+                child[key] = alpha * parent1[key] + (1 - alpha) * parent2[key]
+            elif isinstance(parent1[key], (float, int)):
+                child[key] = random.choice([parent1[key], parent2[key]])
+        return child
+
+    def tournament_selection(self, population: List[dict], fitness_scores: List[float]) -> dict:
         selected = random.sample(list(zip(population, fitness_scores)), self.tournament_size)
         return max(selected, key=lambda x: x[1])[0]
 
-    def evolve_population(self, population: List[np.ndarray], fitness_scores: List[float]) -> List[np.ndarray]:
+    def evolve_population(self, population: List[dict], fitness_scores: List[float]) -> List[dict]:
         new_population = []
         
         # Elitism: keep the top 10% of individuals
@@ -64,13 +131,24 @@ class GeneticAlgorithmBot:
         return new_population
 
     def train(self, num_games=100):
-        population = [self._initialize_position_weights() for _ in range(self.population_size)]
+        population = [
+            {
+                'piece_square_tables': self._initialize_piece_square_tables(),
+                'endgame_weights': self._initialize_endgame_weights(),
+                'mobility_weight': np.random.uniform(0, 0.1),
+                'king_safety_weight': np.random.uniform(0, 0.1)
+            }
+            for _ in range(self.population_size)
+        ]
         
         for generation in range(self.generations):
             fitness_scores = []
             
             for individual in population:
-                self.position_weights = individual
+                self.piece_square_tables = individual['piece_square_tables']
+                self.endgame_weights = individual['endgame_weights']
+                self.mobility_weight = individual['mobility_weight']
+                self.king_safety_weight = individual['king_safety_weight']
                 score = self.play_games(num_games)
                 fitness_scores.append(score)
             
@@ -87,7 +165,11 @@ class GeneticAlgorithmBot:
                 print(f"Early stopping at generation {generation + 1}")
                 break
         
-        self.position_weights = population[fitness_scores.index(max(fitness_scores))]  # Use the best individual
+        best_individual = population[fitness_scores.index(max(fitness_scores))]
+        self.piece_square_tables = best_individual['piece_square_tables']
+        self.endgame_weights = best_individual['endgame_weights']
+        self.mobility_weight = best_individual['mobility_weight']
+        self.king_safety_weight = best_individual['king_safety_weight']
         self.plot_training_metrics()
 
     def play_games(self, num_games: int) -> float:
@@ -98,7 +180,7 @@ class GeneticAlgorithmBot:
                 if board.turn == chess.WHITE:
                     move = self.get_best_move(board)
                 else:
-                    move = random.choice(list(board.legal_moves))
+                    move = self.get_best_move(board)  # Both sides use the AI
                 board.push(move)
             
             result = board.result()
@@ -188,17 +270,17 @@ class GeneticAlgorithmBot:
         plt.ylabel('Fitness')
         plt.title('Training Progress')
         plt.legend()
-        plt.savefig('training_progress.png')
+        plt.savefig('GA_Plots/training_progress.png')
         plt.close()
 
     def save_weights(self, filename: str):
         with open(filename, 'wb') as f:
-            pickle.dump(self.position_weights, f)
+            pickle.dump(self.piece_square_tables, f)
         print(f"Weights saved to {filename}")
 
     def load_weights(self, filename: str):
         with open(filename, 'rb') as f:
-            self.position_weights = pickle.load(f)
+            self.piece_square_tables = pickle.load(f)
         print(f"Weights loaded from {filename}")
 
     def inform_action(self, state, player_id, action):
