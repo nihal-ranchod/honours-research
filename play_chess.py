@@ -26,7 +26,6 @@ import pyspiel
 
 # Add created Agents
 import mcts_algorithm as mcts
-from ga_algorithm import GeneticAlgorithmBot
 from nfsp_algorithm import NFSPAgent
 import tensorflow.compat.v1 as tf
 
@@ -112,34 +111,21 @@ def _init_bot(bot_type, game, player_id):
         random_state=rng,
         solve=FLAGS.solve,
         verbose=FLAGS.verbose)
-  if bot_type == "ga":
-    ga_bot = GeneticAlgorithmBot()
-    if FLAGS.train_ga:
-      ga_bot.train(num_games=200)  # Increased number of games for better evaluation
-      ga_bot.save_weights(FLAGS.ga_weights_file)
-      plt.show()  # This will display the training progress plot
-    else:
-      try:
-        ga_bot.load_weights(FLAGS.ga_weights_file)
-      except FileNotFoundError:
-        print(f"Pre-trained weights not found. Training new model...")
-        ga_bot.train(num_games=200)
-        ga_bot.save_weights(FLAGS.ga_weights_file)
-        plt.show()  # This will display the training progress plot
-    return ga_bot
   if bot_type == "nfsp":
-    nfsp_agent = NFSPAgent(game, player_id)
+    nfsp_agent = NFSPAgent(game, player_id, hidden_layers_sizes=[256, 256])
     if FLAGS.train_nfsp:
-        returns = nfsp_agent.train(num_episodes=10000)
+        training_returns, eval_returns = nfsp_agent.train(num_episodes=100000, eval_every=1000, num_eval_episodes=1000)
         nfsp_agent.save(FLAGS.nfsp_weights_file)
         
         plt.figure(figsize=(10, 6))
-        plt.plot(returns)
+        plt.plot(training_returns, label='Training Returns')
+        plt.plot(range(0, len(training_returns), 1000), eval_returns, label='Evaluation Returns')
         plt.xlabel('Episode')
         plt.ylabel('Return')
         plt.title('NFSP Training Progress')
+        plt.legend()
 
-        plot_dir = "plots"
+        plot_dir = "NFSP_Plots"
         os.makedirs(plot_dir, exist_ok=True)
         plot_path = os.path.join(plot_dir, "nfsp_training_progress.png")
         plt.savefig(plot_path)

@@ -8,20 +8,17 @@ import pyspiel
 tf.disable_v2_behavior()
 
 class NFSPAgent:
-    def __init__(self, game, player_id, hidden_layers_sizes=[128, 128], reservoir_buffer_capacity=2e6, anticipatory_param=0.1):
+    def __init__(self, game, player_id, hidden_layers_sizes=[256, 256], reservoir_buffer_capacity=1e6, anticipatory_param=0.1):
         self.game = game
         self.player_id = player_id
         self.hidden_layers_sizes = hidden_layers_sizes
         self.reservoir_buffer_capacity = reservoir_buffer_capacity
         self.anticipatory_param = anticipatory_param
-
-        self.env = rl_environment.Environment(game)
-        self.info_state_size = self.env.observation_spec()["info_state"][0]
-        self.num_actions = self.env.action_spec()["num_actions"]
-
-        self.sess = tf.Session()
+        self.learning_rate = 0.001
+        self.batch_size = 128
+        self.target_network_update_freq = 1000
+        self.min_buffer_size_to_learn = 1000
         self._init_agent()
-        self.sess.run(tf.global_variables_initializer())
 
     def _init_agent(self):
         try:
@@ -32,7 +29,12 @@ class NFSPAgent:
                 num_actions=self.num_actions,
                 hidden_layers_sizes=self.hidden_layers_sizes,
                 reservoir_buffer_capacity=self.reservoir_buffer_capacity,
-                anticipatory_param=self.anticipatory_param
+                anticipatory_param=self.anticipatory_param,
+                learning_rate=self.learning_rate,
+                batch_size=self.batch_size,
+                min_buffer_size_to_learn=self.min_buffer_size_to_learn,
+                target_network_update_freq=self.target_network_update_freq,
+                optimizer_str="adam"
             )
         except Exception as e:
             print(f"Error initializing NFSP agent: {e}")
@@ -119,8 +121,21 @@ class NFSPAgent:
     def restore(self, file_path):
         self.agent.restore(file_path)
 
-    def train(self, num_episodes=10000):
+    def train(self, num_episodes=100000, eval_every=1000, num_eval_episodes=1000):
+        """
+        Train the NFSP agent with improved process and evaluation.
+        
+        Args:
+            num_episodes (int): Total number of training episodes.
+            eval_every (int): Evaluate the agent every `eval_every` episodes.
+            num_eval_episodes (int): Number of episodes to use for evaluation.
+        
+        Returns:
+            list: Average returns during training.
+        """
         returns = []
+        eval_returns = []
+
         for ep in range(num_episodes):
             time_step = self.env.reset()
             episode_return = 0
@@ -128,16 +143,49 @@ class NFSPAgent:
                 player_id = time_step.observations["current_player"]
                 if player_id == self.player_id:
                     agent_output = self.step(time_step)
-                    action = self.string_to_action(self.action_to_string(agent_output.action))
+                    action = agent_output.action
                 else:
                     action = np.random.choice(time_step.observations["legal_actions"][player_id])
                 time_step = self.env.step([action])
                 episode_return += time_step.rewards[self.player_id]
+
+            # Add episode return to the list
             returns.append(episode_return)
-            if (ep + 1) % 100 == 0:
-                avg_return = np.mean(returns[-100:])
-                print(f"Episode {ep + 1}: Average Return: {avg_return}")
-        return returns
+
+            # Evaluate the agent periodically
+            if (ep + 1) % eval_every == 0:
+                eval_return = self.evaluate(num_eval_episodes)
+                eval_returns.append(eval_return)
+                print(f"Episode {ep + 1}: Eval Return: {eval_return:.2f}, "
+                      f"Training Return: {np.mean(returns[-eval_every:]):.2f}")
+
+        return returns, eval_returns
+
+    def evaluate(self, num_episodes):
+        """
+        Evaluate the NFSP agent against a random opponent.
+        
+        Args:
+            num_episodes (int): Number of episodes to evaluate.
+        
+        Returns:
+            float: Average return of the NFSP agent.
+        """
+        total_return = 0
+        for _ in range(num_episodes):
+            time_step = self.env.reset()
+            episode_return = 0
+            while not time_step.last():
+                player_id = time_step.observations["current_player"]
+                if player_id == self.player_id:
+                    agent_output = self.step(time_step)
+                    action = agent_output.action
+                else:
+                    action = np.random.choice(time_step.observations["legal_actions"][player_id])
+                time_step = self.env.step([action])
+                episode_return += time_step.rewards[self.player_id]
+            total_return += episode_return
+        return total_return / num_episodes
 
     def __del__(self):
         if hasattr(self, 'sess'):
