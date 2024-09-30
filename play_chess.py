@@ -39,7 +39,10 @@ _KNOWN_PLAYERS = [
     "human",
 
     # A MCTS agent trained on past PGN data
-    "mcts_trained",
+    "mcts_trained_pgn",
+
+    # A MCTS agent trained on past chess puzzle data
+    "mcts_trained_puzzle",
 
     # A Neural Fictitious Self-Play agent
     "nfsp",
@@ -49,7 +52,7 @@ _KNOWN_PLAYERS = [
 ]
 
 flags.DEFINE_string("game", "chess", "Name of the game.")
-flags.DEFINE_enum("player1", "ga", _KNOWN_PLAYERS, "Who controls player 1.")
+flags.DEFINE_enum("player1", "mcts_trained_pgn", _KNOWN_PLAYERS, "Who controls player 1.")
 flags.DEFINE_enum("player2", "random", _KNOWN_PLAYERS, "Who controls player 2.")
 flags.DEFINE_string("gtp_path", None, "Where to find a binary for gtp.")
 flags.DEFINE_multi_string("gtp_cmd", [], "GTP commands to run at init.")
@@ -92,15 +95,25 @@ def _init_bot(bot_type, game, player_id):
         random_state=rng,
         solve=FLAGS.solve,
         verbose=FLAGS.verbose)
-  if bot_type == "mcts_trained":
-    pgn_file = "PGN_Data/master_games.pgn"
+  if bot_type == "mcts_trained_pgn":
     evaluator = mcts.RandomRolloutEvaluator(FLAGS.rollout_count, rng)
     return mcts.MCTSWithTraining(
         game,
         FLAGS.uct_c,
         FLAGS.max_simulations,
         evaluator,
-        pgn_file,
+        training_data = "PGN_Data/lichess_db_standard_rated_2013-01.pgn",
+        random_state=rng,
+        solve=FLAGS.solve,
+        verbose=FLAGS.verbose)
+  if bot_type == "mcts_trained_puzzle":
+    evaluator = mcts.RandomRolloutEvaluator(FLAGS.rollout_count, rng)
+    return mcts.MCTSWithTraining(
+        game,
+        FLAGS.uct_c,
+        FLAGS.max_simulations,
+        evaluator,
+        training_data = "PGN_Data/lichess_db_puzzle_converted.pgn",
         random_state=rng,
         solve=FLAGS.solve,
         verbose=FLAGS.verbose)
