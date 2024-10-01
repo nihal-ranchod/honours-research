@@ -14,6 +14,7 @@ import chess
 from absl import app
 from absl import flags
 import numpy as np
+import os
 
 # from open_spiel.python.algorithms import mcts
 from open_spiel.python.algorithms.alpha_zero import evaluator as az_evaluator
@@ -25,7 +26,10 @@ import pyspiel
 
 # Add created Agents
 import mcts_algorithm as mcts
-from ga_algorithm import GeneticAlgorithmBot
+from nfsp_algorithm import NFSPAgent
+import tensorflow.compat.v1 as tf
+
+tf.disable_v2_behavior()
 import matplotlib.pyplot as plt
 
 _KNOWN_PLAYERS = [
@@ -52,7 +56,11 @@ _KNOWN_PLAYERS = [
 ]
 
 flags.DEFINE_string("game", "chess", "Name of the game.")
+<<<<<<< HEAD
 flags.DEFINE_enum("player1", "mcts_trained_pgn", _KNOWN_PLAYERS, "Who controls player 1.")
+=======
+flags.DEFINE_enum("player1", "nfsp", _KNOWN_PLAYERS, "Who controls player 1.")
+>>>>>>> nfsp
 flags.DEFINE_enum("player2", "random", _KNOWN_PLAYERS, "Who controls player 2.")
 flags.DEFINE_string("gtp_path", None, "Where to find a binary for gtp.")
 flags.DEFINE_multi_string("gtp_cmd", [], "GTP commands to run at init.")
@@ -60,7 +68,7 @@ flags.DEFINE_string("az_path", None, "Path to an alpha_zero checkpoint. Needed b
 flags.DEFINE_integer("uct_c", 2, "UCT's exploration constant.")
 flags.DEFINE_integer("rollout_count", 1, "How many rollouts to do.")
 flags.DEFINE_integer("max_simulations", 1000, "How many simulations to run.")
-flags.DEFINE_integer("num_games", 1, "How many games to play.")
+flags.DEFINE_integer("num_games", 5, "How many games to play.")
 flags.DEFINE_integer("seed", None, "Seed for the random number generator.")
 flags.DEFINE_bool("random_first", False, "Play the first move randomly.")
 flags.DEFINE_bool("solve", True, "Whether to use MCTS-Solver.")
@@ -74,6 +82,9 @@ flags.DEFINE_integer("num_generations", 10, "Number of generations.")
 
 flags.DEFINE_bool("train_ga", False, "Whether to train a new GA model or load a pre-trained one.")
 flags.DEFINE_string("ga_weights_file", "ga_weights.pkl", "File to save/load GA weights.")
+
+flags.DEFINE_bool("train_nfsp", False, "Whether to train a new NFSP model or load a pre-trained one.")
+flags.DEFINE_string("nfsp_weights_file", "nfsp_weights.pkl", "File to save/load NFSP weights.")
 
 FLAGS = flags.FLAGS
 
@@ -117,21 +128,30 @@ def _init_bot(bot_type, game, player_id):
         random_state=rng,
         solve=FLAGS.solve,
         verbose=FLAGS.verbose)
-  if bot_type == "ga":
-    ga_bot = GeneticAlgorithmBot()
-    if FLAGS.train_ga:
-      ga_bot.train(num_games=200)  # Increased number of games for better evaluation
-      ga_bot.save_weights(FLAGS.ga_weights_file)
-      plt.show()  # This will display the training progress plot
+  if bot_type == "nfsp":
+    nfsp_agent = NFSPAgent(game, player_id, hidden_layers_sizes=[256, 256])
+    if FLAGS.train_nfsp:
+        training_returns, eval_returns = nfsp_agent.train(num_episodes=100000, eval_every=1000, num_eval_episodes=1000)
+        nfsp_agent.save(FLAGS.nfsp_weights_file)
+        
+        plt.figure(figsize=(10, 6))
+        plt.plot(training_returns, label='Training Returns')
+        plt.plot(range(0, len(training_returns), 1000), eval_returns, label='Evaluation Returns')
+        plt.xlabel('Episode')
+        plt.ylabel('Return')
+        plt.title('NFSP Training Progress')
+        plt.legend()
+
+        plot_dir = "NFSP_Plots"
+        os.makedirs(plot_dir, exist_ok=True)
+        plot_path = os.path.join(plot_dir, "nfsp_training_progress.png")
+        plt.savefig(plot_path)
+        plt.close() 
+        
+        print(f"Training plot saved to {plot_path}")
     else:
-      try:
-        ga_bot.load_weights(FLAGS.ga_weights_file)
-      except FileNotFoundError:
-        print(f"Pre-trained weights not found. Training new model...")
-        ga_bot.train(num_games=200)
-        ga_bot.save_weights(FLAGS.ga_weights_file)
-        plt.show()  # This will display the training progress plot
-    return ga_bot
+        nfsp_agent.restore(FLAGS.nfsp_weights_file)
+    return nfsp_agent
   if bot_type == "random":
     return uniform_random.UniformRandomBot(player_id, rng)
   if bot_type == "human":
