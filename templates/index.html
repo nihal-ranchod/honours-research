@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Bot Battles</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .board-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .player-select {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            padding: 10px 0;
+        }
+        #board {
+            width: 400px;
+        }
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 150px;
+            align-items: center;
+        }
+        select, button {
+            padding: 5px;
+            font-size: 14px;
+        }
+        select {
+            width: 120px;
+        }
+        button {
+            width: 100px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #moveSpeed {
+            width: 100%;
+        }
+        #gameInfo {
+            margin-top: 10px;
+            font-weight: bold;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="game-area">
+            <div class="board-container">
+                <div class="player-select">
+                    <label for="player2">Black: </label>
+                    <select id="player2">
+                        {% for bot in bots %}
+                        <option value="{{ bot }}">{{ bot }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div id="board"></div>
+                <div class="player-select">
+                    <label for="player1">White: </label>
+                    <select id="player1">
+                        {% for bot in bots %}
+                        <option value="{{ bot }}">{{ bot }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div id="gameInfo"></div>
+        </div>
+        <div class="controls">
+            <button id="startGame">Start Game</button>
+            <button id="stopGame">Stop Game</button>
+            <button id="resetGame">Reset Game</button>
+            <label for="moveSpeed">Move Speed (ms):</label>
+            <input type="range" id="moveSpeed" min="100" max="3000" step="100" value="1000">
+            <span id="moveSpeedValue">1000 ms</span>
+        </div>
+    </div>
+
+    <script>
+        var board = null;
+        var game = new Chess();
+        var currentTimeout = null;
+        var moveSpeed = 1000; // Default move speed in milliseconds
+        var gameInProgress = false;
+        var xhr = null;
+
+        function onDragStart (source, piece, position, orientation) {
+            if (game.game_over()) return false;
+            if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
+                (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
+                return false;
+            }
+        }
+
+        function onDrop (source, target) {
+            var move = game.move({
+                from: source,
+                to: target,
+                promotion: 'q'
+            });
+
+            if (move === null) return 'snapback';
+            updateStatus();
+            
+            if ($('#player2').val() !== 'human') {
+                makeHumanMove(game.fen(), move.from + move.to);
+            }
+        }
+
+        function updateStatus () {
+            var status = '';
+
+            var moveColor = 'White';
+            if (game.turn() === 'b') {
+                moveColor = 'Black';
+            }
+
+            if (game.in_checkmate()) {
+                status = 'Game over, ' + moveColor + ' is in checkmate.';
+            } else if (game.in_draw()) {
+                status = 'Game over, drawn position';
+            } else {
+                status = moveColor + ' to move';
+                if (game.in_check()) {
+                    status += ', ' + moveColor + ' is in check';
+                }
+            }
+
+            $('#gameInfo').html(status);
+        }
+
+        var config = {
+            draggable: true,
+            position: 'start',
+            onDragStart: onDragStart,
+            onDrop: onDrop,
+            pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'
+        };
+        board = Chessboard('board', config);
+
+        function stopGame() {
+            if (xhr) {
+                xhr.abort();
+            }
+            if (currentTimeout) {
+                clearTimeout(currentTimeout);
+                currentTimeout = null;
+            }
+            gameInProgress = false;
+            $('#gameInfo').html('Game stopped');
+        }
+
+        function resetGame() {
+            stopGame();
+            game.reset();
+            board.position('start');
+            updateStatus();
+        }
+
+        $('#startGame').on('click', function() {
+            if (gameInProgress) {
+                alert('A game is already in progress. Please stop the current game before starting a new one.');
+                return;
+            }
+
+            var player1 = $('#player1').val();
+            var player2 = $('#player2').val();
+
+            resetGame();
+            gameInProgress = true;
+
+            xhr = new XMLHttpRequest();
+            xhr.open('POST', '/play', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.send('player1=' + player1 + '&player2=' + player2);
+
+            xhr.onprogress = function() {
+                var responses = xhr.responseText.split('\n');
+                for (var i = 0; i < responses.length - 1; i++) {
+                    try {
+                        var data = JSON.parse(responses[i]);
+                        if (data.game_over) {
+                            $('#gameInfo').html('Game over. Winner: ' + data.winner);
+                            game.load(data.final_fen);
+                            board.position(game.fen());
+                            gameInProgress = false;
+                        } else {
+                            currentTimeout = setTimeout(function() {
+                                game.move(data.move, {sloppy: true});
+                                board.position(data.fen);
+                                updateStatus();
+                            }, moveSpeed);
+                        }
+                    } catch (e) {
+                        console.error('Error parsing JSON:', e);
+                    }
+                }
+            };
+
+            xhr.onerror = function() {
+                console.error('Request failed');
+                gameInProgress = false;
+            };
+        });
+
+        $('#stopGame').on('click', stopGame);
+        $('#resetGame').on('click', resetGame);
+
+        // Add event listener for move speed slider
+        $('#moveSpeed').on('input', function() {
+            moveSpeed = parseInt($(this).val());
+            $('#moveSpeedValue').text(moveSpeed + ' ms');
+        });
+
+        $(window).resize(board.resize);
+    </script>
+</body>
+</html>
