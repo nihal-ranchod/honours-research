@@ -23,7 +23,7 @@ class GeneticAlgorithmBot:
 
     def _initialize_piece_square_tables(self):
         # Initialize piece-square tables for each piece type
-        return {piece: np.random.uniform(-1, 1, (8, 8)) for piece in self.piece_values}
+        return {piece_type: np.random.uniform(-1, 1, (8, 8)) for piece_type in chess.PIECE_TYPES}
 
     def _initialize_endgame_weights(self):
         # Initialize endgame weights
@@ -43,8 +43,12 @@ class GeneticAlgorithmBot:
                 row, col = divmod(square, 8)
                 if piece.color == chess.BLACK:
                     row, col = 7 - row, col
-                position_value = self.piece_square_tables[piece.piece_type][row][col]
-                score += color_multiplier * (value + position_value)
+                # Check if the piece type exists in the piece_square_tables
+                if piece.piece_type in self.piece_square_tables:
+                    position_value = self.piece_square_tables[piece.piece_type][row][col]
+                    score += color_multiplier * (value + position_value)
+                else:
+                    score += color_multiplier * value
 
         # Evaluate mobility
         white_mobility = len(list(board.legal_moves))
