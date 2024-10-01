@@ -42,3 +42,8 @@ python3 play_chess.py --player1=mcts --player2=mcts_trained
 ```bash
 python3 play_chess.py --train_ga
 ```
+
+### To train the Neural Fictitious Self Play Agent:
+```bash
+python3 play_chess.py --train_nfsp=True
+```
