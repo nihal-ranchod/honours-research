@@ -476,9 +476,9 @@ class MCTSWithTraining(MCTSBot):
         past_games (list): A list of past games loaded from the PGN file.
     """
 
-    def __init__(self, game, uct_c, max_simulations, evaluator, pgn_file, random_state=None, solve=False, verbose=False):
+    def __init__(self, game, uct_c, max_simulations, evaluator, training_data, random_state=None, solve=False, verbose=False):
         super().__init__(game, uct_c, max_simulations, evaluator, random_state=random_state, solve=solve, verbose=verbose)
-        self.past_games = self._load_pgn(pgn_file)
+        self.past_games = self._load_pgn(training_data)
 
     def _load_pgn(self, pgn_file):
         past_games = []

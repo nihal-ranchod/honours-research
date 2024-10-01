@@ -12,21 +12,21 @@ from open_spiel.python.algorithms.alpha_zero import evaluator as az_evaluator
 from open_spiel.python.algorithms.alpha_zero import model as az_model
 from open_spiel.python.bots import uniform_random
 
-# List of known player types for the bots
 import mcts_algorithm as mcts
 
 _KNOWN_PLAYERS = [
     "mcts",
     "random",
     "human",
-    "mcts_trained",
+    "mcts_trained_pgn",
+    "mcts_trained_puzzle",
 ]
 
 # Define command-line flags for configuring the game and bots
 flags.DEFINE_string("game", "chess", "Name of the game.")
 flags.DEFINE_enum("player1", "mcts", _KNOWN_PLAYERS, "Who controls player 1.")
 flags.DEFINE_enum("player2", "random", _KNOWN_PLAYERS, "Who controls player 2.")
-flags.DEFINE_integer("num_games", 30, "Number of games to play between each pair of bots.")
+flags.DEFINE_integer("num_games", 50, "Number of games to play between each pair of bots.")
 flags.DEFINE_integer("rollout_count", 10, "Number of rollouts for the random rollout evaluator.")
 flags.DEFINE_float("uct_c", 2.0, "UCT exploration constant.")
 flags.DEFINE_integer("max_simulations", 100, "Maximum number of MCTS simulations.")
@@ -44,7 +44,8 @@ elo_ratings = {"bot1": 1500, "bot2": 1500}
 
 def _opt_print(*args, **kwargs):
     if not FLAGS.quiet:
-        print(*args, **kwargs)
+        pass
+        # print(*args, **kwargs)
 
 def _elo_update(player_rating, opponent_rating, result, k=None):
     """
@@ -78,15 +79,25 @@ def _init_bot(bot_type, game, player_id):
             random_state=rng,
             solve=FLAGS.solve,
             verbose=FLAGS.verbose)
-    if bot_type == "mcts_trained":
-        pgn_file = "PGN_Data/training_data.pgn"
+    if bot_type == "mcts_trained_pgn":
         evaluator = mcts.RandomRolloutEvaluator(FLAGS.rollout_count, rng)
         return mcts.MCTSWithTraining(
             game,
             FLAGS.uct_c,
             FLAGS.max_simulations,
             evaluator,
-            pgn_file,
+            training_data = "PGN_Data/lichess_db_standard_rated_2013-01.pgn",
+            random_state=rng,
+            solve=FLAGS.solve,
+            verbose=FLAGS.verbose)
+    if bot_type == "mcts_trained_puzzle":
+        evaluator = mcts.RandomRolloutEvaluator(FLAGS.rollout_count, rng)
+        return mcts.MCTSWithTraining(
+            game,
+            FLAGS.uct_c,
+            FLAGS.max_simulations,
+            evaluator,
+            training_data = "PGN_Data/lichess_db_puzzle_converted.pgn",
             random_state=rng,
             solve=FLAGS.solve,
             verbose=FLAGS.verbose)
@@ -187,7 +198,7 @@ def main(argv):
     # Ensure flags are parsed before calling the _elo_update function
     game = pyspiel.load_game(FLAGS.game)
     
-    bot_types = ["random", "mcts", "mcts_trained"]
+    bot_types = ["random", "mcts", "mcts_trained_pgn", "mcts_trained_puzzle"]
     results = {}
     
     for bot1_type in bot_types:
@@ -199,17 +210,17 @@ def main(argv):
                 match_results["final_elo_bot1"] = elo_ratings["bot1"]
                 match_results["final_elo_bot2"] = elo_ratings["bot2"]
                 results[f"{bot1_type}_vs_{bot2_type}"] = match_results
-                _opt_print(f"Results for {bot1_type} vs {bot2_type}: {match_results}")
+                # _opt_print(f"Results for {bot1_type} vs {bot2_type}: {match_results}")
     
-    with open("evaluation_results2.txt", "w") as f:
+    with open("mcts_evaluation_results.txt", "w") as f:
         for match, result in results.items():
             f.write(f"{match}:\n")
             for key, value in result.items():
                 f.write(f"  {key}: {value}\n")
 
-    _opt_print("\nFinal Elo Ratings:")
-    _opt_print(f"Bot1 Elo Rating: {elo_ratings['bot1']}")
-    _opt_print(f"Bot2 Elo Rating: {elo_ratings['bot2']}")
+    # _opt_print("\nFinal Elo Ratings:")
+    # _opt_print(f"Bot1 Elo Rating: {elo_ratings['bot1']}")
+    # _opt_print(f"Bot2 Elo Rating: {elo_ratings['bot2']}")
 
 if __name__ == "__main__":
     app.run(main)
