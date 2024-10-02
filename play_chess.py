@@ -25,7 +25,8 @@ import pyspiel
 
 # Add created Agents
 import mcts_algorithm as mcts
-from ga_algorithm import GeneticAlgorithmBot
+#from ga_algorithm import GeneticAlgorithmBot
+from ga import GeneticAlgorithmChessBot
 
 import matplotlib.pyplot as plt
 
@@ -54,7 +55,7 @@ _KNOWN_PLAYERS = [
 
 flags.DEFINE_string("game", "chess", "Name of the game.")
 flags.DEFINE_enum("player1", "ga", _KNOWN_PLAYERS, "Who controls player 1.")
-flags.DEFINE_enum("player2", "mcts", _KNOWN_PLAYERS, "Who controls player 2.")
+flags.DEFINE_enum("player2", "random", _KNOWN_PLAYERS, "Who controls player 2.")
 flags.DEFINE_string("gtp_path", None, "Where to find a binary for gtp.")
 flags.DEFINE_multi_string("gtp_cmd", [], "GTP commands to run at init.")
 flags.DEFINE_string("az_path", None, "Path to an alpha_zero checkpoint. Needed by an az player.")
@@ -68,13 +69,14 @@ flags.DEFINE_bool("solve", True, "Whether to use MCTS-Solver.")
 flags.DEFINE_bool("quiet", False, "Don't show the moves as they're played.")
 flags.DEFINE_bool("verbose", False, "Show the MCTS stats of possible moves.")
 
-flags.DEFINE_integer("population_size", 100, "Size of the population.")
-flags.DEFINE_float("mutation_rate", 0.3, "Mutation rate.")
-flags.DEFINE_float("crossover_rate", 0.7, "Crossover rate.")
-flags.DEFINE_integer("num_generations", 10, "Number of generations.")
-
+flags.DEFINE_integer("ga_population_size", 50, "Population size for GA bot.")
+flags.DEFINE_integer("ga_generations", 20, "Number of generations for GA bot training.")
+flags.DEFINE_float("ga_mutation_rate", 0.1, "Mutation rate for GA bot.")
 flags.DEFINE_bool("train_ga", False, "Whether to train a new GA model or load a pre-trained one.")
-flags.DEFINE_string("ga_weights_file", "ga_weights.pkl", "File to save/load GA weights.")
+flags.DEFINE_string("ga_model_file", "chess_ga_model.pkl", "File to save/load GA model.")
+
+# flags.DEFINE_bool("train_ga", False, "Whether to train a new GA model or load a pre-trained one.")
+# flags.DEFINE_string("ga_weights_file", "ga_weights.pkl", "File to save/load GA weights.")
 
 FLAGS = flags.FLAGS
 
@@ -86,6 +88,26 @@ def _opt_print(*args, **kwargs):
 def _init_bot(bot_type, game, player_id):
   """Initializes a bot by type."""
   rng = np.random.RandomState(FLAGS.seed)
+  if bot_type == "ga":
+      ga_bot = GeneticAlgorithmChessBot(
+          player_id,
+          population_size=200,
+          generations=100,
+          mutation_rate=0.1
+      )
+      if FLAGS.train_ga:
+          ga_bot.train()
+          ga_bot.plot_learning_curve()
+          ga_bot.save_model(FLAGS.ga_model_file)
+      else:
+          try:
+              ga_bot.load_model(FLAGS.ga_model_file)
+          except FileNotFoundError:
+              print(f"Pre-trained model not found. Training new model...")
+              ga_bot.train()
+              ga_bot.plot_learning_curve()
+              ga_bot.save_model(FLAGS.ga_model_file)
+      return ga_bot
   if bot_type == "mcts":
     evaluator = mcts.RandomRolloutEvaluator(FLAGS.rollout_count, rng)
     return mcts.MCTSBot(
@@ -118,21 +140,6 @@ def _init_bot(bot_type, game, player_id):
         random_state=rng,
         solve=FLAGS.solve,
         verbose=FLAGS.verbose)
-  if bot_type == "ga":
-    ga_bot = GeneticAlgorithmBot()
-    if FLAGS.train_ga:
-      ga_bot.train(num_games=200)  # Increased number of games for better evaluation
-      ga_bot.save_weights(FLAGS.ga_weights_file)
-      plt.show()  # This will display the training progress plot
-    else:
-      try:
-        ga_bot.load_weights(FLAGS.ga_weights_file)
-      except FileNotFoundError:
-        print(f"Pre-trained weights not found. Training new model...")
-        ga_bot.train(num_games=200)
-        ga_bot.save_weights(FLAGS.ga_weights_file)
-        plt.show() 
-    return ga_bot
   if bot_type == "random":
     return uniform_random.UniformRandomBot(player_id, rng)
   if bot_type == "human":
