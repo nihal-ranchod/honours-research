@@ -1,197 +1,255 @@
 import chess
+import chess.pgn
 import numpy as np
 import random
-import pickle
 import matplotlib.pyplot as plt
+import pickle
+import multiprocessing
+from functools import partial
 import pyspiel
-from open_spiel.python.observation import make_observation
 
-class GeneticAlgorithmChessBot(pyspiel.Bot):
-    def __init__(self, player_id, population_size=200, generations=100, mutation_rate=0.1):
-        super().__init__()
+class GeneticAlgorithmChessBot:
+    def __init__(self, player_id, population_size=100, generations=50, mutation_rate=0.1, crossover_rate=0.8, max_games=1000):
         self.player_id = player_id
         self.population_size = population_size
         self.generations = generations
         self.mutation_rate = mutation_rate
+        self.crossover_rate = crossover_rate
+        self.max_games = max_games
         self.piece_values = {
             chess.PAWN: 100, chess.KNIGHT: 320, chess.BISHOP: 330,
             chess.ROOK: 500, chess.QUEEN: 900, chess.KING: 20000
         }
         self.best_individual = None
-        self.fitness_history = []
+        self.training_progress = []
 
-    def create_individual(self):
+    def _initialize_individual(self):
         return {
-            'piece_weights': np.random.uniform(0.8, 1.2, len(self.piece_values)),
-            'position_weights': np.random.uniform(-10, 10, (6, 64)),  # One 8x8 grid for each piece type
-            'mobility_weight': np.random.uniform(0, 0.1),
-            'pawn_structure_weight': np.random.uniform(0, 0.1),
-            'king_safety_weight': np.random.uniform(0, 0.1)
+            'piece_square_tables': {piece: np.random.uniform(-10, 10, (8, 8)) for piece in chess.PIECE_TYPES},
+            'mobility_weight': np.random.uniform(0, 1),
+            'king_safety_weight': np.random.uniform(0, 1),
+            'pawn_structure_weight': np.random.uniform(0, 1)
         }
 
-    def evaluate_board(self, board, individual):
+    def _evaluate_board(self, board: chess.Board, individual) -> float:
+        if board.is_checkmate():
+            return 10000 if board.turn != self.player_id else -10000
+        if board.is_stalemate() or board.is_insufficient_material():
+            return 0
+
         score = 0
-        for piece_type, base_value in self.piece_values.items():
-            for square in board.pieces(piece_type, chess.WHITE):
-                score += base_value * individual['piece_weights'][piece_type - 1]
-                score += individual['position_weights'][piece_type - 1][square]
-            for square in board.pieces(piece_type, chess.BLACK):
-                score -= base_value * individual['piece_weights'][piece_type - 1]
-                score -= individual['position_weights'][piece_type - 1][63 - square]  # Flip for black
+        for square in chess.SQUARES:
+            piece = board.piece_at(square)
+            if piece:
+                value = self.piece_values[piece.piece_type]
+                color_multiplier = 1 if piece.color == chess.WHITE else -1
+                row, col = divmod(square, 8)
+                if piece.color == chess.BLACK:
+                    row, col = 7 - row, col
+                position_value = individual['piece_square_tables'][piece.piece_type][row][col]
+                score += color_multiplier * (value + position_value)
 
         # Mobility
-        score += len(list(board.legal_moves)) * individual['mobility_weight']
+        mobility_score = len(list(board.legal_moves))
+        score += individual['mobility_weight'] * mobility_score
 
-        # Pawn structure
-        white_pawns = board.pieces(chess.PAWN, chess.WHITE)
-        black_pawns = board.pieces(chess.PAWN, chess.BLACK)
-        score += (len(white_pawns) - len(black_pawns)) * individual['pawn_structure_weight']
-        score += (self.count_doubled_pawns(white_pawns) - self.count_doubled_pawns(black_pawns)) * individual['pawn_structure_weight'] * -10
+        # King safety (simplified)
+        king_safety_score = self._evaluate_king_safety(board)
+        score += individual['king_safety_weight'] * king_safety_score
 
-        # King safety
-        score += self.evaluate_king_safety(board, chess.WHITE, individual) - self.evaluate_king_safety(board, chess.BLACK, individual)
+        # Pawn structure (simplified)
+        pawn_structure_score = self._evaluate_pawn_structure(board)
+        score += individual['pawn_structure_weight'] * pawn_structure_score
 
         return score if board.turn == chess.WHITE else -score
 
-    def count_doubled_pawns(self, pawns):
-        files = [0] * 8
-        for pawn in pawns:
-            files[chess.square_file(pawn)] += 1
-        return sum(f - 1 for f in files if f > 1)
-
-    def evaluate_king_safety(self, board, color, individual):
-        king_square = board.king(color)
-        if king_square is None:
+    def _evaluate_king_safety(self, board: chess.Board) -> float:
+        white_king_square = board.king(chess.WHITE)
+        black_king_square = board.king(chess.BLACK)
+        if white_king_square is None or black_king_square is None:
             return 0
         
-        safety = 0
-        for square in chess.SQUARES:
-            if chess.square_distance(king_square, square) <= 2:
-                if board.is_attacked_by(not color, square):
-                    safety -= 10
-                elif board.is_attacked_by(color, square):
-                    safety += 5
+        white_safety = sum(1 for sq in board.attacks(white_king_square) if board.color_at(sq) == chess.WHITE)
+        black_safety = sum(1 for sq in board.attacks(black_king_square) if board.color_at(sq) == chess.BLACK)
         
-        return safety * individual['king_safety_weight']
+        return white_safety - black_safety
 
-    def play_game(self, individual1, individual2):
-        board = chess.Board()
-        for _ in range(200):  # Max 200 moves
-            if board.is_game_over():
-                break
-            if board.turn == chess.WHITE:
-                move = self.get_best_move(board, individual1, list(board.legal_moves))
-            else:
-                move = self.get_best_move(board, individual2, list(board.legal_moves))
-            board.push(move)
-        return board.result()
+    def _evaluate_pawn_structure(self, board: chess.Board) -> float:
+        white_pawns = board.pieces(chess.PAWN, chess.WHITE)
+        black_pawns = board.pieces(chess.PAWN, chess.BLACK)
+        return len(white_pawns) - len(black_pawns)
 
-    def get_best_move(self, board, individual, legal_moves):
-        best_move = None
-        best_score = float('-inf') if board.turn == chess.WHITE else float('inf')
-        for move in legal_moves:
-            board.push(move)
-            score = self.evaluate_board(board, individual)
-            board.pop()
-            if board.turn == chess.WHITE:
-                if score > best_score:
-                    best_score = score
-                    best_move = move
-            else:
-                if score < best_score:
-                    best_score = score
-                    best_move = move
-        return best_move or random.choice(legal_moves)
+    def _mutate(self, individual):
+        for piece in individual['piece_square_tables']:
+            mask = np.random.random(individual['piece_square_tables'][piece].shape) < self.mutation_rate
+            individual['piece_square_tables'][piece] += mask * np.random.normal(0, 5, individual['piece_square_tables'][piece].shape)
+        
+        for weight in ['mobility_weight', 'king_safety_weight', 'pawn_structure_weight']:
+            if random.random() < self.mutation_rate:
+                individual[weight] += random.gauss(0, 0.1)
+                individual[weight] = max(0, min(1, individual[weight]))
+        
+        return individual
 
-    def fitness(self, individual):
-        score = 0
-        for _ in range(10):  # Play 10 games against random opponent
-            opponent = self.create_individual()
-            result = self.play_game(individual, opponent)
-            if result == '1-0':
-                score += 1
-            elif result == '1/2-1/2':
-                score += 0.5
-        return score
-
-    def select_parent(self, population, fitnesses):
-        tournament_size = 5
-        selected = random.sample(list(zip(population, fitnesses)), tournament_size)
-        return max(selected, key=lambda x: x[1])[0]
-
-    def crossover(self, parent1, parent2):
+    def _crossover(self, parent1, parent2):
         child = {}
         for key in parent1.keys():
-            if isinstance(parent1[key], np.ndarray):
-                mask = np.random.rand(*parent1[key].shape) < 0.5
-                child[key] = np.where(mask, parent1[key], parent2[key])
+            if isinstance(parent1[key], dict):
+                child[key] = {}
+                for subkey in parent1[key]:
+                    alpha = np.random.random(parent1[key][subkey].shape)
+                    child[key][subkey] = alpha * parent1[key][subkey] + (1 - alpha) * parent2[key][subkey]
             else:
                 child[key] = random.choice([parent1[key], parent2[key]])
         return child
 
-    def mutate(self, individual):
-        for key, value in individual.items():
-            if isinstance(value, np.ndarray):
-                mask = np.random.random(value.shape) < self.mutation_rate
-                mutation = np.random.normal(0, 0.1, value.shape)
-                individual[key] = np.where(mask, value + mutation, value)
-            else:
-                if random.random() < self.mutation_rate:
-                    individual[key] += np.random.normal(0, 0.05)
-        return individual
+    def _tournament_selection(self, population, fitness_scores):
+        tournament_size = 5
+        selected = random.sample(list(zip(population, fitness_scores)), tournament_size)
+        return max(selected, key=lambda x: x[1])[0]
 
-    def train(self):
-        population = [self.create_individual() for _ in range(self.population_size)]
+    def _evaluate_individual(self, individual, games):
+        total_score = 0
+        for game in games:
+            board = game.board()
+            for move in game.mainline_moves():
+                board.push(move)
+                score = self._evaluate_board(board, individual)
+                total_score += score if board.turn == chess.WHITE else -score
+        return total_score / len(games)
+
+    def train(self, pgn_file):
+        population = [self._initialize_individual() for _ in range(self.population_size)]
         
+        games = self._load_pgn(pgn_file)
+        games = games[:min(len(games), self.max_games)]  # Limit the number of games
+        
+        pool = multiprocessing.Pool()
+        evaluate_partial = partial(self._evaluate_individual, games=games)
+
         for generation in range(self.generations):
-            fitnesses = [self.fitness(ind) for ind in population]
-            best_fitness = max(fitnesses)
-            self.fitness_history.append(best_fitness)
-            print(f"Generation {generation + 1}/{self.generations}, Best Fitness: {best_fitness}")
+            fitness_scores = pool.map(evaluate_partial, population)
+            
+            best_fitness = max(fitness_scores)
+            avg_fitness = sum(fitness_scores) / len(fitness_scores)
+            self.training_progress.append((best_fitness, avg_fitness))
+            
+            print(f"Generation {generation + 1}: Best Fitness = {best_fitness:.2f}, Avg Fitness = {avg_fitness:.2f}, Games: {len(games)}")
             
             new_population = []
-            elite_size = self.population_size // 10
-            sorted_population = [x for _, x in sorted(zip(fitnesses, population), key=lambda pair: pair[0], reverse=True)]
-            new_population.extend(sorted_population[:elite_size])
+            elite_count = self.population_size // 10
+            elite_indices = np.argsort(fitness_scores)[-elite_count:]
+            new_population.extend([population[i] for i in elite_indices])
             
             while len(new_population) < self.population_size:
-                parent1 = self.select_parent(population, fitnesses)
-                parent2 = self.select_parent(population, fitnesses)
-                child = self.crossover(parent1, parent2)
-                child = self.mutate(child)
+                if random.random() < self.crossover_rate:
+                    parent1 = self._tournament_selection(population, fitness_scores)
+                    parent2 = self._tournament_selection(population, fitness_scores)
+                    child = self._crossover(parent1, parent2)
+                else:
+                    child = self._tournament_selection(population, fitness_scores)
+                child = self._mutate(child)
                 new_population.append(child)
             
             population = new_population
         
-        best_index = fitnesses.index(max(fitnesses))
-        self.best_individual = population[best_index]
+        pool.close()
+        pool.join()
+        
+        self.best_individual = population[fitness_scores.index(max(fitness_scores))]
+
+    def _load_pgn(self, pgn_file):
+        games = []
+        with open(pgn_file) as f:
+            for _ in range(self.max_games):
+                game = chess.pgn.read_game(f)
+                if game is None:
+                    break
+                games.append(game)
+        return games
 
     def step(self, state):
-        if self.best_individual is None:
-            raise ValueError("Model not trained or loaded. Please train or load a model first.")
-        
-        # Get legal actions from the OpenSpiel state
-        legal_actions = state.legal_actions()
-        
-        # Convert OpenSpiel state to a chess.Board object
-        board = chess.Board(state.observation_string(pyspiel.PlayerId.DEFAULT_PLAYER_ID))
-        
-        # Get all legal moves from the chess board
-        legal_chess_moves = list(board.legal_moves)
-        
-        while legal_chess_moves:
-            move = self.get_best_move(board, self.best_individual, legal_chess_moves)
-            # Convert chess.Move to OpenSpiel action string
-            action_string = move.uci()
-            # Check if the action is in the legal actions
-            if action_string in [state.action_to_string(action) for action in legal_actions]:
-                return state.string_to_action(action_string)
+        try:
+            board = chess.Board(state.observation_string())
+            legal_moves = list(board.legal_moves)
             
-            # If the chosen move is not legal, remove it from consideration and try again
-            legal_chess_moves.remove(move)
+            if not legal_moves:
+                return None
+
+            best_move = None
+            best_score = float('-inf')
+
+            for move in legal_moves:
+                board.push(move)
+                score = self._evaluate_board(board, self.best_individual)
+                board.pop()
+
+                if score > best_score:
+                    best_score = score
+                    best_move = move
+
+            if best_move is None:
+                return None
+
+            # Convert chess.Move to OpenSpiel action
+            from_square = best_move.from_square
+            to_square = best_move.to_square
+            action = from_square * 64 + to_square
+
+            # Handle promotions
+            if best_move.promotion:
+                promotion_piece = {
+                    chess.QUEEN: 0,
+                    chess.ROOK: 1,
+                    chess.BISHOP: 2,
+                    chess.KNIGHT: 3
+                }[best_move.promotion]
+                action = 64 * 64 + from_square * 64 + to_square + promotion_piece * (64 * 64)
+
+            # Verify if the action is legal in OpenSpiel's representation
+            if action not in state.legal_actions():
+                # If not, fall back to a random legal action
+                return random.choice(state.legal_actions())
+
+            return action
+
+        except pyspiel.SpielError as e:
+            print(f"Error in step method: {e}")
+            # Fall back to a random legal action
+            return random.choice(state.legal_actions())
+
+    def get_best_move(self, board):
+        legal_moves = list(board.legal_moves)
+        if not legal_moves:
+            return None
         
-        # If no legal moves are left, return a random legal action
-        return random.choice(legal_actions)
+        best_move = None
+        best_score = float('-inf')
+        
+        for move in legal_moves:
+            board.push(move)
+            score = self._evaluate_board(board, self.best_individual)
+            board.pop()
+            
+            if score > best_score:
+                best_score = score
+                best_move = move
+        
+        return best_move
+
+    def plot_learning_curve(self):
+        generations = range(1, len(self.training_progress) + 1)
+        best_fitness, avg_fitness = zip(*self.training_progress)
+        
+        plt.figure(figsize=(10, 6))
+        plt.plot(generations, best_fitness, label='Best Fitness')
+        plt.plot(generations, avg_fitness, label='Average Fitness')
+        plt.xlabel('Generation')
+        plt.ylabel('Fitness')
+        plt.title('Genetic Algorithm Learning Curve')
+        plt.legend()
+        plt.savefig('ga_learning_curve.png')
+        plt.close()
 
     def save_model(self, filename):
         with open(filename, 'wb') as f:
@@ -201,17 +259,8 @@ class GeneticAlgorithmChessBot(pyspiel.Bot):
         with open(filename, 'rb') as f:
             self.best_individual = pickle.load(f)
 
-    def plot_learning_curve(self):
-        plt.figure(figsize=(10, 6))
-        plt.plot(range(1, len(self.fitness_history) + 1), self.fitness_history)
-        plt.title('Learning Curve')
-        plt.xlabel('Generation')
-        plt.ylabel('Best Fitness')
-        plt.savefig('learning_curve.png')
-        plt.close()
-
-    def restart(self):
+    def inform_action(self, state, player_id, action):
         pass
 
-    def inform_action(self, state, player_id, action):
+    def restart(self):
         pass

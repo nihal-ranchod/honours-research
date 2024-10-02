@@ -69,14 +69,16 @@ flags.DEFINE_bool("solve", True, "Whether to use MCTS-Solver.")
 flags.DEFINE_bool("quiet", False, "Don't show the moves as they're played.")
 flags.DEFINE_bool("verbose", False, "Show the MCTS stats of possible moves.")
 
-flags.DEFINE_integer("ga_population_size", 50, "Population size for GA bot.")
-flags.DEFINE_integer("ga_generations", 20, "Number of generations for GA bot training.")
-flags.DEFINE_float("ga_mutation_rate", 0.1, "Mutation rate for GA bot.")
+flags.DEFINE_integer("ga_population_size", 75, "Population size for GA bot.")
+flags.DEFINE_integer("ga_generations", 50, "Number of generations for GA bot training.")
+flags.DEFINE_float("ga_mutation_rate", 0.2, "Mutation rate for GA bot.")
+flags.DEFINE_float("ga_crossover_rate", 0.8, "Crossover rate for GA bot.")
 flags.DEFINE_bool("train_ga", False, "Whether to train a new GA model or load a pre-trained one.")
 flags.DEFINE_string("ga_model_file", "chess_ga_model.pkl", "File to save/load GA model.")
+flags.DEFINE_integer("ga_max_games", 1000, "Maximum number of games to use for GA training.")
 
-# flags.DEFINE_bool("train_ga", False, "Whether to train a new GA model or load a pre-trained one.")
-# flags.DEFINE_string("ga_weights_file", "ga_weights.pkl", "File to save/load GA weights.")
+# Add a constant for the PGN file path
+PGN_FILE_PATH = os.path.join("PGN_Data", "lichess_db_standard_rated_2013-01.pgn")
 
 FLAGS = flags.FLAGS
 
@@ -89,25 +91,27 @@ def _init_bot(bot_type, game, player_id):
   """Initializes a bot by type."""
   rng = np.random.RandomState(FLAGS.seed)
   if bot_type == "ga":
-      ga_bot = GeneticAlgorithmChessBot(
-          player_id,
-          population_size=200,
-          generations=100,
-          mutation_rate=0.1
-      )
-      if FLAGS.train_ga:
-          ga_bot.train()
-          ga_bot.plot_learning_curve()
-          ga_bot.save_model(FLAGS.ga_model_file)
-      else:
-          try:
-              ga_bot.load_model(FLAGS.ga_model_file)
-          except FileNotFoundError:
-              print(f"Pre-trained model not found. Training new model...")
-              ga_bot.train()
-              ga_bot.plot_learning_curve()
-              ga_bot.save_model(FLAGS.ga_model_file)
-      return ga_bot
+    ga_bot = GeneticAlgorithmChessBot(
+        player_id,
+        population_size=FLAGS.ga_population_size,
+        generations=FLAGS.ga_generations,
+        mutation_rate=FLAGS.ga_mutation_rate,
+        crossover_rate=FLAGS.ga_crossover_rate,
+        max_games=FLAGS.ga_max_games
+    )
+    if FLAGS.train_ga:
+        ga_bot.train(PGN_FILE_PATH)
+        ga_bot.plot_learning_curve()
+        ga_bot.save_model(FLAGS.ga_model_file)
+    else:
+        try:
+            ga_bot.load_model(FLAGS.ga_model_file)
+        except FileNotFoundError:
+            print(f"Pre-trained model not found. Training new model...")
+            ga_bot.train(PGN_FILE_PATH)
+            ga_bot.plot_learning_curve()
+            ga_bot.save_model(FLAGS.ga_model_file)
+    return ga_bot
   if bot_type == "mcts":
     evaluator = mcts.RandomRolloutEvaluator(FLAGS.rollout_count, rng)
     return mcts.MCTSBot(
@@ -176,7 +180,7 @@ def _play_game(game, bots, initial_actions):
     state.apply_action(action)
     _opt_print("Forced action", action_str)
     _opt_print("Next state:\n{}".format(state))
-    # _opt_print(chess.Board(fen=str(state)))
+    _opt_print(chess.Board(fen=str(state)))
   while not state.is_terminal():
     current_player = state.current_player()
     # The state can be three different types: chance node,
@@ -207,7 +211,7 @@ def _play_game(game, bots, initial_actions):
     state.apply_action(action)
 
     _opt_print("Next state:\n{}".format(state))
-    # _opt_print(chess.Board(fen=str(state)))
+    _opt_print(chess.Board(fen=str(state)))
 
   # Game is now done. Print return for each player
   returns = state.returns()
