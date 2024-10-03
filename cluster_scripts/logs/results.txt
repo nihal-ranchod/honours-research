@@ -1,36 +1,2096 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-2024-09-30 22:57:40.652593: I external/local_xla/xla/tsl/cuda/cudart_stub.cc:32] Could not find cuda drivers on your machine, GPU will not be used.
-2024-09-30 22:57:43.595106: I external/local_xla/xla/tsl/cuda/cudart_stub.cc:32] Could not find cuda drivers on your machine, GPU will not be used.
-2024-09-30 22:57:46.243186: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:485] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
-2024-09-30 22:57:47.994394: E external/local_xla/xla/stream_executor/cuda/cuda_dnn.cc:8454] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
-2024-09-30 22:57:48.505150: E external/local_xla/xla/stream_executor/cuda/cuda_blas.cc:1452] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
-2024-09-30 22:58:43.838007: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
-/home-mscluster/nranchod/miniconda3/envs/research/lib/python3.10/site-packages/open_spiel/python/algorithms/alpha_zero/model.py:27: UserWarning: Python AlphaZero has known issues when using Keras 3 and may be removed in a future version unless fixed. See OpenSpiel github issue #1206 for details.
-  warnings.warn(
-2024-09-30 22:59:15.541096: W tensorflow/core/common_runtime/gpu/gpu_device.cc:2343] Cannot dlopen some GPU libraries. Please make sure the missing libraries mentioned above are installed properly if you would like to use GPU. Follow the guide at https://www.tensorflow.org/install/gpu for how to download and setup the required libraries for your platform.
-=======
-2024-09-27 16:10:10.715991: I external/local_xla/xla/tsl/cuda/cudart_stub.cc:32] Could not find cuda drivers on your machine, GPU will not be used.
-2024-09-27 16:10:11.323123: I external/local_xla/xla/tsl/cuda/cudart_stub.cc:32] Could not find cuda drivers on your machine, GPU will not be used.
-2024-09-27 16:10:11.979792: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:485] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
-2024-09-27 16:10:12.476996: E external/local_xla/xla/stream_executor/cuda/cuda_dnn.cc:8454] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
-2024-09-27 16:10:12.603114: E external/local_xla/xla/stream_executor/cuda/cuda_blas.cc:1452] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
-2024-09-27 16:10:18.253522: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
-/home-mscluster/nranchod/miniconda3/envs/research/lib/python3.10/site-packages/open_spiel/python/algorithms/alpha_zero/model.py:27: UserWarning: Python AlphaZero has known issues when using Keras 3 and may be removed in a future version unless fixed. See OpenSpiel github issue #1206 for details.
-  warnings.warn(
-2024-09-27 16:10:27.099339: W tensorflow/core/common_runtime/gpu/gpu_device.cc:2343] Cannot dlopen some GPU libraries. Please make sure the missing libraries mentioned above are installed properly if you would like to use GPU. Follow the guide at https://www.tensorflow.org/install/gpu for how to download and setup the required libraries for your platform.
->>>>>>> training
-Skipping registering GPU devices...
-=======
-2024-09-26 14:22:52.461689: I external/local_xla/xla/tsl/cuda/cudart_stub.cc:32] Could not find cuda drivers on your machine, GPU will not be used.
-2024-09-26 14:22:54.326620: I external/local_xla/xla/tsl/cuda/cudart_stub.cc:32] Could not find cuda drivers on your machine, GPU will not be used.
-2024-09-26 14:22:55.107694: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:485] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
-2024-09-26 14:22:55.821643: E external/local_xla/xla/stream_executor/cuda/cuda_dnn.cc:8454] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
-2024-09-26 14:22:56.044410: E external/local_xla/xla/stream_executor/cuda/cuda_blas.cc:1452] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
-2024-09-26 14:23:13.077908: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
-/home-mscluster/nranchod/miniconda3/envs/research/lib/python3.10/site-packages/open_spiel/python/algorithms/alpha_zero/model.py:27: UserWarning: Python AlphaZero has known issues when using Keras 3 and may be removed in a future version unless fixed. See OpenSpiel github issue #1206 for details.
-  warnings.warn(
-2024-09-26 14:23:34.303312: W tensorflow/core/common_runtime/gpu/gpu_device.cc:2343] Cannot dlopen some GPU libraries. Please make sure the missing libraries mentioned above are installed properly if you would like to use GPU. Follow the guide at https://www.tensorflow.org/install/gpu for how to download and setup the required libraries for your platform.
-Skipping registering GPU devices...
-slurmstepd-mscluster9: error: *** JOB 122674 ON mscluster9 CANCELLED AT 2024-09-27T12:48:29 ***
->>>>>>> nfsp
+Generation 1: Best Fitness = 5043.59, Avg Fitness = 4070.21, Games: 1000
+Generation 2: Best Fitness = 5148.97, Avg Fitness = 4729.11, Games: 1000
+Generation 3: Best Fitness = 5270.09, Avg Fitness = 4945.18, Games: 1000
+Generation 4: Best Fitness = 5343.90, Avg Fitness = 5112.25, Games: 1000
+Generation 5: Best Fitness = 5440.66, Avg Fitness = 5189.54, Games: 1000
+Generation 6: Best Fitness = 5472.74, Avg Fitness = 5312.77, Games: 1000
+Generation 7: Best Fitness = 5519.03, Avg Fitness = 5365.26, Games: 1000
+Generation 8: Best Fitness = 5573.08, Avg Fitness = 5422.31, Games: 1000
+Generation 9: Best Fitness = 5603.70, Avg Fitness = 5498.49, Games: 1000
+Generation 10: Best Fitness = 5653.18, Avg Fitness = 5545.43, Games: 1000
+Generation 11: Best Fitness = 5686.02, Avg Fitness = 5601.67, Games: 1000
+Generation 12: Best Fitness = 5745.28, Avg Fitness = 5623.84, Games: 1000
+Generation 13: Best Fitness = 5801.85, Avg Fitness = 5685.45, Games: 1000
+Generation 14: Best Fitness = 5834.39, Avg Fitness = 5718.30, Games: 1000
+Generation 15: Best Fitness = 5988.85, Avg Fitness = 5787.82, Games: 1000
+Generation 16: Best Fitness = 6018.09, Avg Fitness = 5838.18, Games: 1000
+Generation 17: Best Fitness = 6046.35, Avg Fitness = 5897.80, Games: 1000
+Generation 18: Best Fitness = 6087.78, Avg Fitness = 5958.97, Games: 1000
+Generation 19: Best Fitness = 6169.98, Avg Fitness = 6004.57, Games: 1000
+Generation 20: Best Fitness = 6252.65, Avg Fitness = 6070.57, Games: 1000
+Generation 21: Best Fitness = 6265.18, Avg Fitness = 6130.55, Games: 1000
+Generation 22: Best Fitness = 6279.65, Avg Fitness = 6181.35, Games: 1000
+Generation 23: Best Fitness = 6354.96, Avg Fitness = 6221.37, Games: 1000
+Generation 24: Best Fitness = 6388.93, Avg Fitness = 6255.87, Games: 1000
+Generation 25: Best Fitness = 6418.18, Avg Fitness = 6315.70, Games: 1000
+Generation 26: Best Fitness = 6481.08, Avg Fitness = 6349.51, Games: 1000
+Generation 27: Best Fitness = 6522.91, Avg Fitness = 6416.76, Games: 1000
+Generation 28: Best Fitness = 6572.08, Avg Fitness = 6455.58, Games: 1000
+Generation 29: Best Fitness = 6637.57, Avg Fitness = 6513.86, Games: 1000
+Generation 30: Best Fitness = 6697.53, Avg Fitness = 6589.86, Games: 1000
+Generation 31: Best Fitness = 6818.51, Avg Fitness = 6644.63, Games: 1000
+Generation 32: Best Fitness = 6880.28, Avg Fitness = 6699.75, Games: 1000
+Generation 33: Best Fitness = 6958.46, Avg Fitness = 6768.84, Games: 1000
+Generation 34: Best Fitness = 6947.86, Avg Fitness = 6804.40, Games: 1000
+Generation 35: Best Fitness = 7003.99, Avg Fitness = 6880.52, Games: 1000
+Generation 36: Best Fitness = 7053.99, Avg Fitness = 6932.58, Games: 1000
+Generation 37: Best Fitness = 7082.20, Avg Fitness = 6968.98, Games: 1000
+Generation 38: Best Fitness = 7155.89, Avg Fitness = 7038.99, Games: 1000
+Generation 39: Best Fitness = 7212.19, Avg Fitness = 7074.68, Games: 1000
+Generation 40: Best Fitness = 7271.02, Avg Fitness = 7148.64, Games: 1000
+Generation 41: Best Fitness = 7312.60, Avg Fitness = 7185.14, Games: 1000
+Generation 42: Best Fitness = 7378.19, Avg Fitness = 7247.27, Games: 1000
+Generation 43: Best Fitness = 7442.23, Avg Fitness = 7285.42, Games: 1000
+Generation 44: Best Fitness = 7486.88, Avg Fitness = 7361.92, Games: 1000
+Generation 45: Best Fitness = 7575.63, Avg Fitness = 7410.62, Games: 1000
+Generation 46: Best Fitness = 7581.59, Avg Fitness = 7432.98, Games: 1000
+Generation 47: Best Fitness = 7745.60, Avg Fitness = 7501.31, Games: 1000
+Generation 48: Best Fitness = 7785.05, Avg Fitness = 7593.75, Games: 1000
+Generation 49: Best Fitness = 7828.70, Avg Fitness = 7651.69, Games: 1000
+Generation 50: Best Fitness = 7880.50, Avg Fitness = 7735.10, Games: 1000
+Generation 51: Best Fitness = 7909.89, Avg Fitness = 7791.40, Games: 1000
+Generation 52: Best Fitness = 7975.85, Avg Fitness = 7832.50, Games: 1000
+Generation 53: Best Fitness = 7996.72, Avg Fitness = 7876.29, Games: 1000
+Generation 54: Best Fitness = 8044.90, Avg Fitness = 7919.78, Games: 1000
+Generation 55: Best Fitness = 8088.54, Avg Fitness = 7958.86, Games: 1000
+Generation 56: Best Fitness = 8182.54, Avg Fitness = 8021.86, Games: 1000
+Generation 57: Best Fitness = 8274.15, Avg Fitness = 8078.79, Games: 1000
+Generation 58: Best Fitness = 8347.01, Avg Fitness = 8150.73, Games: 1000
+Generation 59: Best Fitness = 8434.07, Avg Fitness = 8211.13, Games: 1000
+Generation 60: Best Fitness = 8511.58, Avg Fitness = 8290.61, Games: 1000
+Generation 61: Best Fitness = 8562.01, Avg Fitness = 8394.59, Games: 1000
+Generation 62: Best Fitness = 8581.20, Avg Fitness = 8463.95, Games: 1000
+Generation 63: Best Fitness = 8686.83, Avg Fitness = 8515.47, Games: 1000
+Generation 64: Best Fitness = 8691.18, Avg Fitness = 8556.34, Games: 1000
+Generation 65: Best Fitness = 8750.50, Avg Fitness = 8626.13, Games: 1000
+Generation 66: Best Fitness = 8784.96, Avg Fitness = 8680.64, Games: 1000
+Generation 67: Best Fitness = 8855.35, Avg Fitness = 8713.15, Games: 1000
+Generation 68: Best Fitness = 8891.74, Avg Fitness = 8759.25, Games: 1000
+Generation 69: Best Fitness = 8938.10, Avg Fitness = 8828.84, Games: 1000
+Generation 70: Best Fitness = 8988.65, Avg Fitness = 8862.77, Games: 1000
+Generation 71: Best Fitness = 9031.96, Avg Fitness = 8902.88, Games: 1000
+Generation 72: Best Fitness = 9136.19, Avg Fitness = 8986.89, Games: 1000
+Generation 73: Best Fitness = 9239.74, Avg Fitness = 9068.56, Games: 1000
+Generation 74: Best Fitness = 9290.17, Avg Fitness = 9009.13, Games: 1000
+Generation 75: Best Fitness = 9338.21, Avg Fitness = 9191.09, Games: 1000
+Generation 76: Best Fitness = 9386.89, Avg Fitness = 9274.67, Games: 1000
+Generation 77: Best Fitness = 9429.01, Avg Fitness = 9300.69, Games: 1000
+Generation 78: Best Fitness = 9515.38, Avg Fitness = 9370.39, Games: 1000
+Generation 79: Best Fitness = 9515.38, Avg Fitness = 9428.61, Games: 1000
+Generation 80: Best Fitness = 9671.00, Avg Fitness = 9485.11, Games: 1000
+Generation 81: Best Fitness = 9719.03, Avg Fitness = 9556.15, Games: 1000
+Generation 82: Best Fitness = 9757.62, Avg Fitness = 9608.92, Games: 1000
+Generation 83: Best Fitness = 9815.67, Avg Fitness = 9686.91, Games: 1000
+Generation 84: Best Fitness = 9891.92, Avg Fitness = 9730.67, Games: 1000
+Generation 85: Best Fitness = 9908.40, Avg Fitness = 9791.01, Games: 1000
+Generation 86: Best Fitness = 10004.26, Avg Fitness = 9841.41, Games: 1000
+Early stopping: Fitness threshold 10000.0 reached.
+Initial state:
+rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+Player 1 sampled action: e4
+Next state:
+rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1
+r n b q k b n r
+p p p p p p p p
+. . . . . . . .
+. . . . . . . .
+. . . . P . . .
+. . . . . . . .
+P P P P . P P P
+R N B Q K B N R
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: a6
+Next state:
+rnbqkbnr/1ppppppp/p7/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2
+r n b q k b n r
+. p p p p p p p
+p . . . . . . .
+. . . . . . . .
+. . . . P . . .
+. . . . . . . .
+P P P P . P P P
+R N B Q K B N R
+Player 1 sampled action: c3
+Next state:
+rnbqkbnr/1ppppppp/p7/8/4P3/2P5/PP1P1PPP/RNBQKBNR b KQkq - 0 2
+r n b q k b n r
+. p p p p p p p
+p . . . . . . .
+. . . . . . . .
+. . . . P . . .
+. . P . . . . .
+P P . P . P P P
+R N B Q K B N R
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Nf6
+Next state:
+rnbqkb1r/1ppppppp/p4n2/8/4P3/2P5/PP1P1PPP/RNBQKBNR w KQkq - 1 3
+r n b q k b . r
+. p p p p p p p
+p . . . . n . .
+. . . . . . . .
+. . . . P . . .
+. . P . . . . .
+P P . P . P P P
+R N B Q K B N R
+Player 1 sampled action: Nh3
+Next state:
+rnbqkb1r/1ppppppp/p4n2/8/4P3/2P4N/PP1P1PPP/RNBQKB1R b KQkq - 2 3
+r n b q k b . r
+. p p p p p p p
+p . . . . n . .
+. . . . . . . .
+. . . . P . . .
+. . P . . . . N
+P P . P . P P P
+R N B Q K B . R
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Rg8
+Next state:
+rnbqkbr1/1ppppppp/p4n2/8/4P3/2P4N/PP1P1PPP/RNBQKB1R w KQq - 3 4
+r n b q k b r .
+. p p p p p p p
+p . . . . n . .
+. . . . . . . .
+. . . . P . . .
+. . P . . . . N
+P P . P . P P P
+R N B Q K B . R
+Player 1 sampled action: Ng1
+Next state:
+rnbqkbr1/1ppppppp/p4n2/8/4P3/2P5/PP1P1PPP/RNBQKBNR b KQq - 4 4
+r n b q k b r .
+. p p p p p p p
+p . . . . n . .
+. . . . . . . .
+. . . . P . . .
+. . P . . . . .
+P P . P . P P P
+R N B Q K B N R
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: d5
+Next state:
+rnbqkbr1/1pp1pppp/p4n2/3p4/4P3/2P5/PP1P1PPP/RNBQKBNR w KQq d6 0 5
+r n b q k b r .
+. p p . p p p p
+p . . . . n . .
+. . . p . . . .
+. . . . P . . .
+. . P . . . . .
+P P . P . P P P
+R N B Q K B N R
+Player 1 sampled action: Na3
+Next state:
+rnbqkbr1/1pp1pppp/p4n2/3p4/4P3/N1P5/PP1P1PPP/R1BQKBNR b KQq - 1 5
+r n b q k b r .
+. p p . p p p p
+p . . . . n . .
+. . . p . . . .
+. . . . P . . .
+N . P . . . . .
+P P . P . P P P
+R . B Q K B N R
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Bg4
+Next state:
+rn1qkbr1/1pp1pppp/p4n2/3p4/4P1b1/N1P5/PP1P1PPP/R1BQKBNR w KQq - 2 6
+r n . q k b r .
+. p p . p p p p
+p . . . . n . .
+. . . p . . . .
+. . . . P . b .
+N . P . . . . .
+P P . P . P P P
+R . B Q K B N R
+Player 1 sampled action: Qf3
+Next state:
+rn1qkbr1/1pp1pppp/p4n2/3p4/4P1b1/N1P2Q2/PP1P1PPP/R1B1KBNR b KQq - 3 6
+r n . q k b r .
+. p p . p p p p
+p . . . . n . .
+. . . p . . . .
+. . . . P . b .
+N . P . . Q . .
+P P . P . P P P
+R . B . K B N R
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Kd7
+Next state:
+rn1q1br1/1ppkpppp/p4n2/3p4/4P1b1/N1P2Q2/PP1P1PPP/R1B1KBNR w KQ - 4 7
+r n . q . b r .
+. p p k p p p p
+p . . . . n . .
+. . . p . . . .
+. . . . P . b .
+N . P . . Q . .
+P P . P . P P P
+R . B . K B N R
+Player 1 sampled action: Nb5
+Next state:
+rn1q1br1/1ppkpppp/p4n2/1N1p4/4P1b1/2P2Q2/PP1P1PPP/R1B1KBNR b KQ - 5 7
+r n . q . b r .
+. p p k p p p p
+p . . . . n . .
+. N . p . . . .
+. . . . P . b .
+. . P . . Q . .
+P P . P . P P P
+R . B . K B N R
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Ne8
+Next state:
+rn1qnbr1/1ppkpppp/p7/1N1p4/4P1b1/2P2Q2/PP1P1PPP/R1B1KBNR w KQ - 6 8
+r n . q n b r .
+. p p k p p p p
+p . . . . . . .
+. N . p . . . .
+. . . . P . b .
+. . P . . Q . .
+P P . P . P P P
+R . B . K B N R
+Player 1 sampled action: Qxg4+
+Next state:
+rn1qnbr1/1ppkpppp/p7/1N1p4/4P1Q1/2P5/PP1P1PPP/R1B1KBNR b KQ - 0 8
+r n . q n b r .
+. p p k p p p p
+p . . . . . . .
+. N . p . . . .
+. . . . P . Q .
+. . P . . . . .
+P P . P . P P P
+R . B . K B N R
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: e6
+Next state:
+rn1qnbr1/1ppk1ppp/p3p3/1N1p4/4P1Q1/2P5/PP1P1PPP/R1B1KBNR w KQ - 0 9
+r n . q n b r .
+. p p k . p p p
+p . . . p . . .
+. N . p . . . .
+. . . . P . Q .
+. . P . . . . .
+P P . P . P P P
+R . B . K B N R
+Player 1 sampled action: h4
+Next state:
+rn1qnbr1/1ppk1ppp/p3p3/1N1p4/4P1QP/2P5/PP1P1PP1/R1B1KBNR b KQ h3 0 9
+r n . q n b r .
+. p p k . p p p
+p . . . p . . .
+. N . p . . . .
+. . . . P . Q P
+. . P . . . . .
+P P . P . P P .
+R . B . K B N R
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: f6
+Next state:
+rn1qnbr1/1ppk2pp/p3pp2/1N1p4/4P1QP/2P5/PP1P1PP1/R1B1KBNR w KQ - 0 10
+r n . q n b r .
+. p p k . . p p
+p . . . p p . .
+. N . p . . . .
+. . . . P . Q P
+. . P . . . . .
+P P . P . P P .
+R . B . K B N R
+Player 1 sampled action: Ne2
+Next state:
+rn1qnbr1/1ppk2pp/p3pp2/1N1p4/4P1QP/2P5/PP1PNPP1/R1B1KB1R b KQ - 1 10
+r n . q n b r .
+. p p k . . p p
+p . . . p p . .
+. N . p . . . .
+. . . . P . Q P
+. . P . . . . .
+P P . P N P P .
+R . B . K B . R
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Kc6
+Next state:
+rn1qnbr1/1pp3pp/p1k1pp2/1N1p4/4P1QP/2P5/PP1PNPP1/R1B1KB1R w KQ - 2 11
+r n . q n b r .
+. p p . . . p p
+p . k . p p . .
+. N . p . . . .
+. . . . P . Q P
+. . P . . . . .
+P P . P N P P .
+R . B . K B . R
+Player 1 sampled action: Nd6
+Next state:
+rn1qnbr1/1pp3pp/p1kNpp2/3p4/4P1QP/2P5/PP1PNPP1/R1B1KB1R b KQ - 3 11
+r n . q n b r .
+. p p . . . p p
+p . k N p p . .
+. . . p . . . .
+. . . . P . Q P
+. . P . . . . .
+P P . P N P P .
+R . B . K B . R
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: g6
+Next state:
+rn1qnbr1/1pp4p/p1kNppp1/3p4/4P1QP/2P5/PP1PNPP1/R1B1KB1R w KQ - 0 12
+r n . q n b r .
+. p p . . . . p
+p . k N p p p .
+. . . p . . . .
+. . . . P . Q P
+. . P . . . . .
+P P . P N P P .
+R . B . K B . R
+Player 1 sampled action: Qf4
+Next state:
+rn1qnbr1/1pp4p/p1kNppp1/3p4/4PQ1P/2P5/PP1PNPP1/R1B1KB1R b KQ - 1 12
+r n . q n b r .
+. p p . . . . p
+p . k N p p p .
+. . . p . . . .
+. . . . P Q . P
+. . P . . . . .
+P P . P N P P .
+R . B . K B . R
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: dxe4
+Next state:
+rn1qnbr1/1pp4p/p1kNppp1/8/4pQ1P/2P5/PP1PNPP1/R1B1KB1R w KQ - 0 13
+r n . q n b r .
+. p p . . . . p
+p . k N p p p .
+. . . . . . . .
+. . . . p Q . P
+. . P . . . . .
+P P . P N P P .
+R . B . K B . R
+Player 1 sampled action: h5
+Next state:
+rn1qnbr1/1pp4p/p1kNppp1/7P/4pQ2/2P5/PP1PNPP1/R1B1KB1R b KQ - 0 13
+r n . q n b r .
+. p p . . . . p
+p . k N p p p .
+. . . . . . . P
+. . . . p Q . .
+. . P . . . . .
+P P . P N P P .
+R . B . K B . R
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Rg7
+Next state:
+rn1qnb2/1pp3rp/p1kNppp1/7P/4pQ2/2P5/PP1PNPP1/R1B1KB1R w KQ - 1 14
+r n . q n b . .
+. p p . . . r p
+p . k N p p p .
+. . . . . . . P
+. . . . p Q . .
+. . P . . . . .
+P P . P N P P .
+R . B . K B . R
+Player 1 sampled action: d3
+Next state:
+rn1qnb2/1pp3rp/p1kNppp1/7P/4pQ2/2PP4/PP2NPP1/R1B1KB1R b KQ - 0 14
+r n . q n b . .
+. p p . . . r p
+p . k N p p p .
+. . . . . . . P
+. . . . p Q . .
+. . P P . . . .
+P P . . N P P .
+R . B . K B . R
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: b5
+Next state:
+rn1qnb2/2p3rp/p1kNppp1/1p5P/4pQ2/2PP4/PP2NPP1/R1B1KB1R w KQ b6 0 15
+r n . q n b . .
+. . p . . . r p
+p . k N p p p .
+. p . . . . . P
+. . . . p Q . .
+. . P P . . . .
+P P . . N P P .
+R . B . K B . R
+Player 1 sampled action: g3
+Next state:
+rn1qnb2/2p3rp/p1kNppp1/1p5P/4pQ2/2PP2P1/PP2NP2/R1B1KB1R b KQ - 0 15
+r n . q n b . .
+. . p . . . r p
+p . k N p p p .
+. p . . . . . P
+. . . . p Q . .
+. . P P . . P .
+P P . . N P . .
+R . B . K B . R
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Qc8
+Next state:
+rnq1nb2/2p3rp/p1kNppp1/1p5P/4pQ2/2PP2P1/PP2NP2/R1B1KB1R w KQ - 1 16
+r n q . n b . .
+. . p . . . r p
+p . k N p p p .
+. p . . . . . P
+. . . . p Q . .
+. . P P . . P .
+P P . . N P . .
+R . B . K B . R
+Player 1 sampled action: Kd1
+Next state:
+rnq1nb2/2p3rp/p1kNppp1/1p5P/4pQ2/2PP2P1/PP2NP2/R1BK1B1R b - - 2 16
+r n q . n b . .
+. . p . . . r p
+p . k N p p p .
+. p . . . . . P
+. . . . p Q . .
+. . P P . . P .
+P P . . N P . .
+R . B K . B . R
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Bxd6
+Next state:
+rnq1n3/2p3rp/p1kbppp1/1p5P/4pQ2/2PP2P1/PP2NP2/R1BK1B1R w - - 0 17
+r n q . n . . .
+. . p . . . r p
+p . k b p p p .
+. p . . . . . P
+. . . . p Q . .
+. . P P . . P .
+P P . . N P . .
+R . B K . B . R
+Player 1 sampled action: Nd4+
+Next state:
+rnq1n3/2p3rp/p1kbppp1/1p5P/3NpQ2/2PP2P1/PP3P2/R1BK1B1R b - - 1 17
+r n q . n . . .
+. . p . . . r p
+p . k b p p p .
+. p . . . . . P
+. . . N p Q . .
+. . P P . . P .
+P P . . . P . .
+R . B K . B . R
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Kd7
+Next state:
+rnq1n3/2pk2rp/p2bppp1/1p5P/3NpQ2/2PP2P1/PP3P2/R1BK1B1R w - - 2 18
+r n q . n . . .
+. . p k . . r p
+p . . b p p p .
+. p . . . . . P
+. . . N p Q . .
+. . P P . . P .
+P P . . . P . .
+R . B K . B . R
+Player 1 sampled action: Bh3
+Next state:
+rnq1n3/2pk2rp/p2bppp1/1p5P/3NpQ2/2PP2PB/PP3P2/R1BK3R b - - 3 18
+r n q . n . . .
+. . p k . . r p
+p . . b p p p .
+. p . . . . . P
+. . . N p Q . .
+. . P P . . P B
+P P . . . P . .
+R . B K . . . R
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: c5
+Next state:
+rnq1n3/3k2rp/p2bppp1/1pp4P/3NpQ2/2PP2PB/PP3P2/R1BK3R w - c6 0 19
+r n q . n . . .
+. . . k . . r p
+p . . b p p p .
+. p p . . . . P
+. . . N p Q . .
+. . P P . . P B
+P P . . . P . .
+R . B K . . . R
+Player 1 sampled action: Ke1
+Next state:
+rnq1n3/3k2rp/p2bppp1/1pp4P/3NpQ2/2PP2PB/PP3P2/R1B1K2R b - - 1 19
+r n q . n . . .
+. . . k . . r p
+p . . b p p p .
+. p p . . . . P
+. . . N p Q . .
+. . P P . . P B
+P P . . . P . .
+R . B . K . . R
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Ke7
+Next state:
+rnq1n3/4k1rp/p2bppp1/1pp4P/3NpQ2/2PP2PB/PP3P2/R1B1K2R w - - 2 20
+r n q . n . . .
+. . . . k . r p
+p . . b p p p .
+. p p . . . . P
+. . . N p Q . .
+. . P P . . P B
+P P . . . P . .
+R . B . K . . R
+Player 1 sampled action: Rb1
+Next state:
+rnq1n3/4k1rp/p2bppp1/1pp4P/3NpQ2/2PP2PB/PP3P2/1RB1K2R b - - 3 20
+r n q . n . . .
+. . . . k . r p
+p . . b p p p .
+. p p . . . . P
+. . . N p Q . .
+. . P P . . P B
+P P . . . P . .
+. R B . K . . R
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: e3
+Next state:
+rnq1n3/4k1rp/p2bppp1/1pp4P/3N1Q2/2PPp1PB/PP3P2/1RB1K2R w - - 0 21
+r n q . n . . .
+. . . . k . r p
+p . . b p p p .
+. p p . . . . P
+. . . N . Q . .
+. . P P p . P B
+P P . . . P . .
+. R B . K . . R
+Player 1 sampled action: Rf1
+Next state:
+rnq1n3/4k1rp/p2bppp1/1pp4P/3N1Q2/2PPp1PB/PP3P2/1RB1KR2 b - - 1 21
+r n q . n . . .
+. . . . k . r p
+p . . b p p p .
+. p p . . . . P
+. . . N . Q . .
+. . P P p . P B
+P P . . . P . .
+. R B . K R . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Bc7
+Next state:
+rnq1n3/2b1k1rp/p3ppp1/1pp4P/3N1Q2/2PPp1PB/PP3P2/1RB1KR2 w - - 2 22
+r n q . n . . .
+. . b . k . r p
+p . . . p p p .
+. p p . . . . P
+. . . N . Q . .
+. . P P p . P B
+P P . . . P . .
+. R B . K R . .
+Player 1 sampled action: Bg4
+Next state:
+rnq1n3/2b1k1rp/p3ppp1/1pp4P/3N1QB1/2PPp1P1/PP3P2/1RB1KR2 b - - 3 22
+r n q . n . . .
+. . b . k . r p
+p . . . p p p .
+. p p . . . . P
+. . . N . Q B .
+. . P P p . P .
+P P . . . P . .
+. R B . K R . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Nd7
+Next state:
+r1q1n3/2bnk1rp/p3ppp1/1pp4P/3N1QB1/2PPp1P1/PP3P2/1RB1KR2 w - - 4 23
+r . q . n . . .
+. . b n k . r p
+p . . . p p p .
+. p p . . . . P
+. . . N . Q B .
+. . P P p . P .
+P P . . . P . .
+. R B . K R . .
+Player 1 sampled action: Nxe6
+Next state:
+r1q1n3/2bnk1rp/p3Npp1/1pp4P/5QB1/2PPp1P1/PP3P2/1RB1KR2 b - - 0 23
+r . q . n . . .
+. . b n k . r p
+p . . . N p p .
+. p p . . . . P
+. . . . . Q B .
+. . P P p . P .
+P P . . . P . .
+. R B . K R . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Rg8
+Next state:
+r1q1n1r1/2bnk2p/p3Npp1/1pp4P/5QB1/2PPp1P1/PP3P2/1RB1KR2 w - - 1 24
+r . q . n . r .
+. . b n k . . p
+p . . . N p p .
+. p p . . . . P
+. . . . . Q B .
+. . P P p . P .
+P P . . . P . .
+. R B . K R . .
+Player 1 sampled action: Qd4
+Next state:
+r1q1n1r1/2bnk2p/p3Npp1/1pp4P/3Q2B1/2PPp1P1/PP3P2/1RB1KR2 b - - 2 24
+r . q . n . r .
+. . b n k . . p
+p . . . N p p .
+. p p . . . . P
+. . . Q . . B .
+. . P P p . P .
+P P . . . P . .
+. R B . K R . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Kf7
+Next state:
+r1q1n1r1/2bn1k1p/p3Npp1/1pp4P/3Q2B1/2PPp1P1/PP3P2/1RB1KR2 w - - 3 25
+r . q . n . r .
+. . b n . k . p
+p . . . N p p .
+. p p . . . . P
+. . . Q . . B .
+. . P P p . P .
+P P . . . P . .
+. R B . K R . .
+Player 1 sampled action: Be2
+Next state:
+r1q1n1r1/2bn1k1p/p3Npp1/1pp4P/3Q4/2PPp1P1/PP2BP2/1RB1KR2 b - - 4 25
+r . q . n . r .
+. . b n . k . p
+p . . . N p p .
+. p p . . . . P
+. . . Q . . . .
+. . P P p . P .
+P P . . B P . .
+. R B . K R . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Be5
+Next state:
+r1q1n1r1/3n1k1p/p3Npp1/1pp1b2P/3Q4/2PPp1P1/PP2BP2/1RB1KR2 w - - 5 26
+r . q . n . r .
+. . . n . k . p
+p . . . N p p .
+. p p . b . . P
+. . . Q . . . .
+. . P P p . P .
+P P . . B P . .
+. R B . K R . .
+Player 1 sampled action: Bxe3
+Next state:
+r1q1n1r1/3n1k1p/p3Npp1/1pp1b2P/3Q4/2PPB1P1/PP2BP2/1R2KR2 b - - 0 26
+r . q . n . r .
+. . . n . k . p
+p . . . N p p .
+. p p . b . . P
+. . . Q . . . .
+. . P P B . P .
+P P . . B P . .
+. R . . K R . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Bf4
+Next state:
+r1q1n1r1/3n1k1p/p3Npp1/1pp4P/3Q1b2/2PPB1P1/PP2BP2/1R2KR2 w - - 1 27
+r . q . n . r .
+. . . n . k . p
+p . . . N p p .
+. p p . . . . P
+. . . Q . b . .
+. . P P B . P .
+P P . . B P . .
+. R . . K R . .
+Player 1 sampled action: Rd1
+Next state:
+r1q1n1r1/3n1k1p/p3Npp1/1pp4P/3Q1b2/2PPB1P1/PP2BP2/3RKR2 b - - 2 27
+r . q . n . r .
+. . . n . k . p
+p . . . N p p .
+. p p . . . . P
+. . . Q . b . .
+. . P P B . P .
+P P . . B P . .
+. . . R K R . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: c4
+Next state:
+r1q1n1r1/3n1k1p/p3Npp1/1p5P/2pQ1b2/2PPB1P1/PP2BP2/3RKR2 w - - 0 28
+r . q . n . r .
+. . . n . k . p
+p . . . N p p .
+. p . . . . . P
+. . p Q . b . .
+. . P P B . P .
+P P . . B P . .
+. . . R K R . .
+Player 1 sampled action: Rh1
+Next state:
+r1q1n1r1/3n1k1p/p3Npp1/1p5P/2pQ1b2/2PPB1P1/PP2BP2/3RK2R b - - 1 28
+r . q . n . r .
+. . . n . k . p
+p . . . N p p .
+. p . . . . . P
+. . p Q . b . .
+. . P P B . P .
+P P . . B P . .
+. . . R K . . R
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Qd8
+Next state:
+r2qn1r1/3n1k1p/p3Npp1/1p5P/2pQ1b2/2PPB1P1/PP2BP2/3RK2R w - - 2 29
+r . . q n . r .
+. . . n . k . p
+p . . . N p p .
+. p . . . . . P
+. . p Q . b . .
+. . P P B . P .
+P P . . B P . .
+. . . R K . . R
+Player 1 sampled action: Rh4
+Next state:
+r2qn1r1/3n1k1p/p3Npp1/1p5P/2pQ1b1R/2PPB1P1/PP2BP2/3RK3 b - - 3 29
+r . . q n . r .
+. . . n . k . p
+p . . . N p p .
+. p . . . . . P
+. . p Q . b . R
+. . P P B . P .
+P P . . B P . .
+. . . R K . . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Ne5
+Next state:
+r2qn1r1/5k1p/p3Npp1/1p2n2P/2pQ1b1R/2PPB1P1/PP2BP2/3RK3 w - - 4 30
+r . . q n . r .
+. . . . . k . p
+p . . . N p p .
+. p . . n . . P
+. . p Q . b . R
+. . P P B . P .
+P P . . B P . .
+. . . R K . . .
+Player 1 sampled action: Bf1
+Next state:
+r2qn1r1/5k1p/p3Npp1/1p2n2P/2pQ1b1R/2PPB1P1/PP3P2/3RKB2 b - - 5 30
+r . . q n . r .
+. . . . . k . p
+p . . . N p p .
+. p . . n . . P
+. . p Q . b . R
+. . P P B . P .
+P P . . . P . .
+. . . R K B . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: g5
+Next state:
+r2qn1r1/5k1p/p3Np2/1p2n1pP/2pQ1b1R/2PPB1P1/PP3P2/3RKB2 w - - 0 31
+r . . q n . r .
+. . . . . k . p
+p . . . N p . .
+. p . . n . p P
+. . p Q . b . R
+. . P P B . P .
+P P . . . P . .
+. . . R K B . .
+Player 1 sampled action: Rxf4
+Next state:
+r2qn1r1/5k1p/p3Np2/1p2n1pP/2pQ1R2/2PPB1P1/PP3P2/3RKB2 b - - 0 31
+r . . q n . r .
+. . . . . k . p
+p . . . N p . .
+. p . . n . p P
+. . p Q . R . .
+. . P P B . P .
+P P . . . P . .
+. . . R K B . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Rb8
+Next state:
+1r1qn1r1/5k1p/p3Np2/1p2n1pP/2pQ1R2/2PPB1P1/PP3P2/3RKB2 w - - 1 32
+. r . q n . r .
+. . . . . k . p
+p . . . N p . .
+. p . . n . p P
+. . p Q . R . .
+. . P P B . P .
+P P . . . P . .
+. . . R K B . .
+Player 1 sampled action: Qxd8
+Next state:
+1r1Qn1r1/5k1p/p3Np2/1p2n1pP/2p2R2/2PPB1P1/PP3P2/3RKB2 b - - 0 32
+. r . Q n . r .
+. . . . . k . p
+p . . . N p . .
+. p . . n . p P
+. . p . . R . .
+. . P P B . P .
+P P . . . P . .
+. . . R K B . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Nf3+
+Next state:
+1r1Qn1r1/5k1p/p3Np2/1p4pP/2p2R2/2PPBnP1/PP3P2/3RKB2 w - - 1 33
+. r . Q n . r .
+. . . . . k . p
+p . . . N p . .
+. p . . . . p P
+. . p . . R . .
+. . P P B n P .
+P P . . . P . .
+. . . R K B . .
+Player 1 sampled action: Rxf3
+Next state:
+1r1Qn1r1/5k1p/p3Np2/1p4pP/2p5/2PPBRP1/PP3P2/3RKB2 b - - 0 33
+. r . Q n . r .
+. . . . . k . p
+p . . . N p . .
+. p . . . . p P
+. . p . . . . .
+. . P P B R P .
+P P . . . P . .
+. . . R K B . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: f5
+Next state:
+1r1Qn1r1/5k1p/p3N3/1p3ppP/2p5/2PPBRP1/PP3P2/3RKB2 w - - 0 34
+. r . Q n . r .
+. . . . . k . p
+p . . . N . . .
+. p . . . p p P
+. . p . . . . .
+. . P P B R P .
+P P . . . P . .
+. . . R K B . .
+Player 1 sampled action: Bh3
+Next state:
+1r1Qn1r1/5k1p/p3N3/1p3ppP/2p5/2PPBRPB/PP3P2/3RK3 b - - 1 34
+. r . Q n . r .
+. . . . . k . p
+p . . . N . . .
+. p . . . p p P
+. . p . . . . .
+. . P P B R P B
+P P . . . P . .
+. . . R K . . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Rh8
+Next state:
+1r1Qn2r/5k1p/p3N3/1p3ppP/2p5/2PPBRPB/PP3P2/3RK3 w - - 2 35
+. r . Q n . . r
+. . . . . k . p
+p . . . N . . .
+. p . . . p p P
+. . p . . . . .
+. . P P B R P B
+P P . . . P . .
+. . . R K . . .
+Player 1 sampled action: Ra1
+Next state:
+1r1Qn2r/5k1p/p3N3/1p3ppP/2p5/2PPBRPB/PP3P2/R3K3 b - - 3 35
+. r . Q n . . r
+. . . . . k . p
+p . . . N . . .
+. p . . . p p P
+. . p . . . . .
+. . P P B R P B
+P P . . . P . .
+R . . . K . . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Kg8
+Next state:
+1r1Qn1kr/7p/p3N3/1p3ppP/2p5/2PPBRPB/PP3P2/R3K3 w - - 4 36
+. r . Q n . k r
+. . . . . . . p
+p . . . N . . .
+. p . . . p p P
+. . p . . . . .
+. . P P B R P B
+P P . . . P . .
+R . . . K . . .
+Player 1 sampled action: Bb6
+Next state:
+1r1Qn1kr/7p/pB2N3/1p3ppP/2p5/2PP1RPB/PP3P2/R3K3 b - - 5 36
+. r . Q n . k r
+. . . . . . . p
+p B . . N . . .
+. p . . . p p P
+. . p . . . . .
+. . P P . R P B
+P P . . . P . .
+R . . . K . . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Rxb6
+Next state:
+3Qn1kr/7p/pr2N3/1p3ppP/2p5/2PP1RPB/PP3P2/R3K3 w - - 0 37
+. . . Q n . k r
+. . . . . . . p
+p r . . N . . .
+. p . . . p p P
+. . p . . . . .
+. . P P . R P B
+P P . . . P . .
+R . . . K . . .
+Player 1 sampled action: d4
+Next state:
+3Qn1kr/7p/pr2N3/1p3ppP/2pP4/2P2RPB/PP3P2/R3K3 b - - 0 37
+. . . Q n . k r
+. . . . . . . p
+p r . . N . . .
+. p . . . p p P
+. . p P . . . .
+. . P . . R P B
+P P . . . P . .
+R . . . K . . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Rd6
+Next state:
+3Qn1kr/7p/p2rN3/1p3ppP/2pP4/2P2RPB/PP3P2/R3K3 w - - 1 38
+. . . Q n . k r
+. . . . . . . p
+p . . r N . . .
+. p . . . p p P
+. . p P . . . .
+. . P . . R P B
+P P . . . P . .
+R . . . K . . .
+Player 1 sampled action: Qb6
+Next state:
+4n1kr/7p/pQ1rN3/1p3ppP/2pP4/2P2RPB/PP3P2/R3K3 b - - 2 38
+. . . . n . k r
+. . . . . . . p
+p Q . r N . . .
+. p . . . p p P
+. . p P . . . .
+. . P . . R P B
+P P . . . P . .
+R . . . K . . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Nf6
+Next state:
+6kr/7p/pQ1rNn2/1p3ppP/2pP4/2P2RPB/PP3P2/R3K3 w - - 3 39
+. . . . . . k r
+. . . . . . . p
+p Q . r N n . .
+. p . . . p p P
+. . p P . . . .
+. . P . . R P B
+P P . . . P . .
+R . . . K . . .
+Player 1 sampled action: Kf1
+Next state:
+6kr/7p/pQ1rNn2/1p3ppP/2pP4/2P2RPB/PP3P2/R4K2 b - - 4 39
+. . . . . . k r
+. . . . . . . p
+p Q . r N n . .
+. p . . . p p P
+. . p P . . . .
+. . P . . R P B
+P P . . . P . .
+R . . . . K . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Ne4
+Next state:
+6kr/7p/pQ1rN3/1p3ppP/2pPn3/2P2RPB/PP3P2/R4K2 w - - 5 40
+. . . . . . k r
+. . . . . . . p
+p Q . r N . . .
+. p . . . p p P
+. . p P n . . .
+. . P . . R P B
+P P . . . P . .
+R . . . . K . .
+Player 1 sampled action: Rd1
+Next state:
+6kr/7p/pQ1rN3/1p3ppP/2pPn3/2P2RPB/PP3P2/3R1K2 b - - 6 40
+. . . . . . k r
+. . . . . . . p
+p Q . r N . . .
+. p . . . p p P
+. . p P n . . .
+. . P . . R P B
+P P . . . P . .
+. . . R . K . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Nxg3+
+Next state:
+6kr/7p/pQ1rN3/1p3ppP/2pP4/2P2RnB/PP3P2/3R1K2 w - - 0 41
+. . . . . . k r
+. . . . . . . p
+p Q . r N . . .
+. p . . . p p P
+. . p P . . . .
+. . P . . R n B
+P P . . . P . .
+. . . R . K . .
+Player 1 sampled action: Ke1
+Next state:
+6kr/7p/pQ1rN3/1p3ppP/2pP4/2P2RnB/PP3P2/3RK3 b - - 1 41
+. . . . . . k r
+. . . . . . . p
+p Q . r N . . .
+. p . . . p p P
+. . p P . . . .
+. . P . . R n B
+P P . . . P . .
+. . . R K . . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Nh1
+Next state:
+6kr/7p/pQ1rN3/1p3ppP/2pP4/2P2R1B/PP3P2/3RK2n w - - 2 42
+. . . . . . k r
+. . . . . . . p
+p Q . r N . . .
+. p . . . p p P
+. . p P . . . .
+. . P . . R . B
+P P . . . P . .
+. . . R K . . n
+Player 1 sampled action: Bg4
+Next state:
+6kr/7p/pQ1rN3/1p3ppP/2pP2B1/2P2R2/PP3P2/3RK2n b - - 3 42
+. . . . . . k r
+. . . . . . . p
+p Q . r N . . .
+. p . . . p p P
+. . p P . . B .
+. . P . . R . .
+P P . . . P . .
+. . . R K . . n
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Rxb6
+Next state:
+6kr/7p/pr2N3/1p3ppP/2pP2B1/2P2R2/PP3P2/3RK2n w - - 0 43
+. . . . . . k r
+. . . . . . . p
+p r . . N . . .
+. p . . . p p P
+. . p P . . B .
+. . P . . R . .
+P P . . . P . .
+. . . R K . . n
+Player 1 sampled action: d5
+Next state:
+6kr/7p/pr2N3/1p1P1ppP/2p3B1/2P2R2/PP3P2/3RK2n b - - 0 43
+. . . . . . k r
+. . . . . . . p
+p r . . N . . .
+. p . P . p p P
+. . p . . . B .
+. . P . . R . .
+P P . . . P . .
+. . . R K . . n
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: f4
+Next state:
+6kr/7p/pr2N3/1p1P2pP/2p2pB1/2P2R2/PP3P2/3RK2n w - - 0 44
+. . . . . . k r
+. . . . . . . p
+p r . . N . . .
+. p . P . . p P
+. . p . . p B .
+. . P . . R . .
+P P . . . P . .
+. . . R K . . n
+Player 1 sampled action: Rb1
+Next state:
+6kr/7p/pr2N3/1p1P2pP/2p2pB1/2P2R2/PP3P2/1R2K2n b - - 1 44
+. . . . . . k r
+. . . . . . . p
+p r . . N . . .
+. p . P . . p P
+. . p . . p B .
+. . P . . R . .
+P P . . . P . .
+. R . . K . . n
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Ng3
+Next state:
+6kr/7p/pr2N3/1p1P2pP/2p2pB1/2P2Rn1/PP3P2/1R2K3 w - - 2 45
+. . . . . . k r
+. . . . . . . p
+p r . . N . . .
+. p . P . . p P
+. . p . . p B .
+. . P . . R n .
+P P . . . P . .
+. R . . K . . .
+Player 1 sampled action: a4
+Next state:
+6kr/7p/pr2N3/1p1P2pP/P1p2pB1/2P2Rn1/1P3P2/1R2K3 b - a3 0 45
+. . . . . . k r
+. . . . . . . p
+p r . . N . . .
+. p . P . . p P
+P . p . . p B .
+. . P . . R n .
+. P . . . P . .
+. R . . K . . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: b4
+Next state:
+6kr/7p/pr2N3/3P2pP/Ppp2pB1/2P2Rn1/1P3P2/1R2K3 w - - 0 46
+. . . . . . k r
+. . . . . . . p
+p r . . N . . .
+. . . P . . p P
+P p p . . p B .
+. . P . . R n .
+. P . . . P . .
+. R . . K . . .
+Player 1 sampled action: Re3
+Next state:
+6kr/7p/pr2N3/3P2pP/Ppp2pB1/2P1R1n1/1P3P2/1R2K3 b - - 1 46
+. . . . . . k r
+. . . . . . . p
+p r . . N . . .
+. . . P . . p P
+P p p . . p B .
+. . P . R . n .
+. P . . . P . .
+. R . . K . . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Kf7
+Next state:
+7r/5k1p/pr2N3/3P2pP/Ppp2pB1/2P1R1n1/1P3P2/1R2K3 w - - 2 47
+. . . . . . . r
+. . . . . k . p
+p r . . N . . .
+. . . P . . p P
+P p p . . p B .
+. . P . R . n .
+. P . . . P . .
+. R . . K . . .
+Player 1 sampled action: Be2
+Next state:
+7r/5k1p/pr2N3/3P2pP/Ppp2p2/2P1R1n1/1P2BP2/1R2K3 b - - 3 47
+. . . . . . . r
+. . . . . k . p
+p r . . N . . .
+. . . P . . p P
+P p p . . p . .
+. . P . R . n .
+. P . . B P . .
+. R . . K . . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Kg8
+Next state:
+6kr/7p/pr2N3/3P2pP/Ppp2p2/2P1R1n1/1P2BP2/1R2K3 w - - 4 48
+. . . . . . k r
+. . . . . . . p
+p r . . N . . .
+. . . P . . p P
+P p p . . p . .
+. . P . R . n .
+. P . . B P . .
+. R . . K . . .
+Player 1 sampled action: Bd3
+Next state:
+6kr/7p/pr2N3/3P2pP/Ppp2p2/2PBR1n1/1P3P2/1R2K3 b - - 5 48
+. . . . . . k r
+. . . . . . . p
+p r . . N . . .
+. . . P . . p P
+P p p . . p . .
+. . P B R . n .
+. P . . . P . .
+. R . . K . . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Ne2
+Next state:
+6kr/7p/pr2N3/3P2pP/Ppp2p2/2PBR3/1P2nP2/1R2K3 w - - 6 49
+. . . . . . k r
+. . . . . . . p
+p r . . N . . .
+. . . P . . p P
+P p p . . p . .
+. . P B R . . .
+. P . . n P . .
+. R . . K . . .
+Player 1 sampled action: Rxe2
+Next state:
+6kr/7p/pr2N3/3P2pP/Ppp2p2/2PB4/1P2RP2/1R2K3 b - - 0 49
+. . . . . . k r
+. . . . . . . p
+p r . . N . . .
+. . . P . . p P
+P p p . . p . .
+. . P B . . . .
+. P . . R P . .
+. R . . K . . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: f3
+Next state:
+6kr/7p/pr2N3/3P2pP/Ppp5/2PB1p2/1P2RP2/1R2K3 w - - 0 50
+. . . . . . k r
+. . . . . . . p
+p r . . N . . .
+. . . P . . p P
+P p p . . . . .
+. . P B . p . .
+. P . . R P . .
+. R . . K . . .
+Player 1 sampled action: Bc2
+Next state:
+6kr/7p/pr2N3/3P2pP/Ppp5/2P2p2/1PB1RP2/1R2K3 b - - 1 50
+. . . . . . k r
+. . . . . . . p
+p r . . N . . .
+. . . P . . p P
+P p p . . . . .
+. . P . . p . .
+. P B . R P . .
+. R . . K . . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Rxe6
+Next state:
+6kr/7p/p3r3/3P2pP/Ppp5/2P2p2/1PB1RP2/1R2K3 w - - 0 51
+. . . . . . k r
+. . . . . . . p
+p . . . r . . .
+. . . P . . p P
+P p p . . . . .
+. . P . . p . .
+. P B . R P . .
+. R . . K . . .
+Player 1 sampled action: Rc1
+Next state:
+6kr/7p/p3r3/3P2pP/Ppp5/2P2p2/1PB1RP2/2R1K3 b - - 1 51
+. . . . . . k r
+. . . . . . . p
+p . . . r . . .
+. . . P . . p P
+P p p . . . . .
+. . P . . p . .
+. P B . R P . .
+. . R . K . . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: bxc3
+Next state:
+6kr/7p/p3r3/3P2pP/P1p5/2p2p2/1PB1RP2/2R1K3 w - - 0 52
+. . . . . . k r
+. . . . . . . p
+p . . . r . . .
+. . . P . . p P
+P . p . . . . .
+. . p . . p . .
+. P B . R P . .
+. . R . K . . .
+Player 1 sampled action: Re3
+Next state:
+6kr/7p/p3r3/3P2pP/P1p5/2p1Rp2/1PB2P2/2R1K3 b - - 1 52
+. . . . . . k r
+. . . . . . . p
+p . . . r . . .
+. . . P . . p P
+P . p . . . . .
+. . p . R p . .
+. P B . . P . .
+. . R . K . . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Rc6
+Next state:
+6kr/7p/p1r5/3P2pP/P1p5/2p1Rp2/1PB2P2/2R1K3 w - - 2 53
+. . . . . . k r
+. . . . . . . p
+p . r . . . . .
+. . . P . . p P
+P . p . . . . .
+. . p . R p . .
+. P B . . P . .
+. . R . K . . .
+Player 1 sampled action: Rd3
+Next state:
+6kr/7p/p1r5/3P2pP/P1p5/2pR1p2/1PB2P2/2R1K3 b - - 3 53
+. . . . . . k r
+. . . . . . . p
+p . r . . . . .
+. . . P . . p P
+P . p . . . . .
+. . p R . p . .
+. P B . . P . .
+. . R . K . . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: g4
+Next state:
+6kr/7p/p1r5/3P3P/P1p3p1/2pR1p2/1PB2P2/2R1K3 w - - 0 54
+. . . . . . k r
+. . . . . . . p
+p . r . . . . .
+. . . P . . . P
+P . p . . . p .
+. . p R . p . .
+. P B . . P . .
+. . R . K . . .
+Player 1 sampled action: Re3
+Next state:
+6kr/7p/p1r5/3P3P/P1p3p1/2p1Rp2/1PB2P2/2R1K3 b - - 1 54
+. . . . . . k r
+. . . . . . . p
+p . r . . . . .
+. . . P . . . P
+P . p . . . p .
+. . p . R p . .
+. P B . . P . .
+. . R . K . . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Rh6
+Next state:
+6kr/7p/p6r/3P3P/P1p3p1/2p1Rp2/1PB2P2/2R1K3 w - - 2 55
+. . . . . . k r
+. . . . . . . p
+p . . . . . . r
+. . . P . . . P
+P . p . . . p .
+. . p . R p . .
+. P B . . P . .
+. . R . K . . .
+Player 1 sampled action: Bf5
+Next state:
+6kr/7p/p6r/3P1B1P/P1p3p1/2p1Rp2/1P3P2/2R1K3 b - - 3 55
+. . . . . . k r
+. . . . . . . p
+p . . . . . . r
+. . . P . B . P
+P . p . . . p .
+. . p . R p . .
+. P . . . P . .
+. . R . K . . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Re6
+Next state:
+6kr/7p/p3r3/3P1B1P/P1p3p1/2p1Rp2/1P3P2/2R1K3 w - - 4 56
+. . . . . . k r
+. . . . . . . p
+p . . . r . . .
+. . . P . B . P
+P . p . . . p .
+. . p . R p . .
+. P . . . P . .
+. . R . K . . .
+Player 1 sampled action: Bxe6+
+Next state:
+6kr/7p/p3B3/3P3P/P1p3p1/2p1Rp2/1P3P2/2R1K3 b - - 0 56
+. . . . . . k r
+. . . . . . . p
+p . . . B . . .
+. . . P . . . P
+P . p . . . p .
+. . p . R p . .
+. P . . . P . .
+. . R . K . . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Kg7
+Next state:
+7r/6kp/p3B3/3P3P/P1p3p1/2p1Rp2/1P3P2/2R1K3 w - - 1 57
+. . . . . . . r
+. . . . . . k p
+p . . . B . . .
+. . . P . . . P
+P . p . . . p .
+. . p . R p . .
+. P . . . P . .
+. . R . K . . .
+Player 1 sampled action: Rcxc3
+Next state:
+7r/6kp/p3B3/3P3P/P1p3p1/2R1Rp2/1P3P2/4K3 b - - 0 57
+. . . . . . . r
+. . . . . . k p
+p . . . B . . .
+. . . P . . . P
+P . p . . . p .
+. . R . R p . .
+. P . . . P . .
+. . . . K . . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Rb8
+Next state:
+1r6/6kp/p3B3/3P3P/P1p3p1/2R1Rp2/1P3P2/4K3 w - - 1 58
+. r . . . . . .
+. . . . . . k p
+p . . . B . . .
+. . . P . . . P
+P . p . . . p .
+. . R . R p . .
+. P . . . P . .
+. . . . K . . .
+Player 1 sampled action: Rxc4
+Next state:
+1r6/6kp/p3B3/3P3P/P1R3p1/4Rp2/1P3P2/4K3 b - - 0 58
+. r . . . . . .
+. . . . . . k p
+p . . . B . . .
+. . . P . . . P
+P . R . . . p .
+. . . . R p . .
+. P . . . P . .
+. . . . K . . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Rb6
+Next state:
+8/6kp/pr2B3/3P3P/P1R3p1/4Rp2/1P3P2/4K3 w - - 1 59
+. . . . . . . .
+. . . . . . k p
+p r . . B . . .
+. . . P . . . P
+P . R . . . p .
+. . . . R p . .
+. P . . . P . .
+. . . . K . . .
+Player 1 sampled action: Rd3
+Next state:
+8/6kp/pr2B3/3P3P/P1R3p1/3R1p2/1P3P2/4K3 b - - 2 59
+. . . . . . . .
+. . . . . . k p
+p r . . B . . .
+. . . P . . . P
+P . R . . . p .
+. . . R . p . .
+. P . . . P . .
+. . . . K . . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Rb3
+Next state:
+8/6kp/p3B3/3P3P/P1R3p1/1r1R1p2/1P3P2/4K3 w - - 3 60
+. . . . . . . .
+. . . . . . k p
+p . . . B . . .
+. . . P . . . P
+P . R . . . p .
+. r . R . p . .
+. P . . . P . .
+. . . . K . . .
+Player 1 sampled action: Rf4
+Next state:
+8/6kp/p3B3/3P3P/P4Rp1/1r1R1p2/1P3P2/4K3 b - - 4 60
+. . . . . . . .
+. . . . . . k p
+p . . . B . . .
+. . . P . . . P
+P . . . . R p .
+. r . R . p . .
+. P . . . P . .
+. . . . K . . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Rb5
+Next state:
+8/6kp/p3B3/1r1P3P/P4Rp1/3R1p2/1P3P2/4K3 w - - 5 61
+. . . . . . . .
+. . . . . . k p
+p . . . B . . .
+. r . P . . . P
+P . . . . R p .
+. . . R . p . .
+. P . . . P . .
+. . . . K . . .
+Player 1 sampled action: Rf8
+Next state:
+5R2/6kp/p3B3/1r1P3P/P5p1/3R1p2/1P3P2/4K3 b - - 6 61
+. . . . . R . .
+. . . . . . k p
+p . . . B . . .
+. r . P . . . P
+P . . . . . p .
+. . . R . p . .
+. P . . . P . .
+. . . . K . . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Rc5
+Next state:
+5R2/6kp/p3B3/2rP3P/P5p1/3R1p2/1P3P2/4K3 w - - 7 62
+. . . . . R . .
+. . . . . . k p
+p . . . B . . .
+. . r P . . . P
+P . . . . . p .
+. . . R . p . .
+. P . . . P . .
+. . . . K . . .
+Player 1 sampled action: Rd8
+Next state:
+3R4/6kp/p3B3/2rP3P/P5p1/3R1p2/1P3P2/4K3 b - - 8 62
+. . . R . . . .
+. . . . . . k p
+p . . . B . . .
+. . r P . . . P
+P . . . . . p .
+. . . R . p . .
+. P . . . P . .
+. . . . K . . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Rc3
+Next state:
+3R4/6kp/p3B3/3P3P/P5p1/2rR1p2/1P3P2/4K3 w - - 9 63
+. . . R . . . .
+. . . . . . k p
+p . . . B . . .
+. . . P . . . P
+P . . . . . p .
+. . r R . p . .
+. P . . . P . .
+. . . . K . . .
+Player 1 sampled action: Rd4
+Next state:
+3R4/6kp/p3B3/3P3P/P2R2p1/2r2p2/1P3P2/4K3 b - - 10 63
+. . . R . . . .
+. . . . . . k p
+p . . . B . . .
+. . . P . . . P
+P . . R . . p .
+. . r . . p . .
+. P . . . P . .
+. . . . K . . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Re3+
+Next state:
+3R4/6kp/p3B3/3P3P/P2R2p1/4rp2/1P3P2/4K3 w - - 11 64
+. . . R . . . .
+. . . . . . k p
+p . . . B . . .
+. . . P . . . P
+P . . R . . p .
+. . . . r p . .
+. P . . . P . .
+. . . . K . . .
+Player 1 sampled action: Kf1
+Next state:
+3R4/6kp/p3B3/3P3P/P2R2p1/4rp2/1P3P2/5K2 b - - 12 64
+. . . R . . . .
+. . . . . . k p
+p . . . B . . .
+. . . P . . . P
+P . . R . . p .
+. . . . r p . .
+. P . . . P . .
+. . . . . K . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Rb3
+Next state:
+3R4/6kp/p3B3/3P3P/P2R2p1/1r3p2/1P3P2/5K2 w - - 13 65
+. . . R . . . .
+. . . . . . k p
+p . . . B . . .
+. . . P . . . P
+P . . R . . p .
+. r . . . p . .
+. P . . . P . .
+. . . . . K . .
+Player 1 sampled action: Rd2
+Next state:
+3R4/6kp/p3B3/3P3P/P5p1/1r3p2/1P1R1P2/5K2 b - - 14 65
+. . . R . . . .
+. . . . . . k p
+p . . . B . . .
+. . . P . . . P
+P . . . . . p .
+. r . . . p . .
+. P . R . P . .
+. . . . . K . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Rxb2
+Next state:
+3R4/6kp/p3B3/3P3P/P5p1/5p2/1r1R1P2/5K2 w - - 0 66
+. . . R . . . .
+. . . . . . k p
+p . . . B . . .
+. . . P . . . P
+P . . . . . p .
+. . . . . p . .
+. r . R . P . .
+. . . . . K . .
+Player 1 sampled action: Rf8
+Next state:
+5R2/6kp/p3B3/3P3P/P5p1/5p2/1r1R1P2/5K2 b - - 1 66
+. . . . . R . .
+. . . . . . k p
+p . . . B . . .
+. . . P . . . P
+P . . . . . p .
+. . . . . p . .
+. r . R . P . .
+. . . . . K . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Kxf8
+Next state:
+5k2/7p/p3B3/3P3P/P5p1/5p2/1r1R1P2/5K2 w - - 0 67
+. . . . . k . .
+. . . . . . . p
+p . . . B . . .
+. . . P . . . P
+P . . . . . p .
+. . . . . p . .
+. r . R . P . .
+. . . . . K . .
+Player 1 sampled action: Rxb2
+Next state:
+5k2/7p/p3B3/3P3P/P5p1/5p2/1R3P2/5K2 b - - 0 67
+. . . . . k . .
+. . . . . . . p
+p . . . B . . .
+. . . P . . . P
+P . . . . . p .
+. . . . . p . .
+. R . . . P . .
+. . . . . K . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Ke8
+Next state:
+4k3/7p/p3B3/3P3P/P5p1/5p2/1R3P2/5K2 w - - 1 68
+. . . . k . . .
+. . . . . . . p
+p . . . B . . .
+. . . P . . . P
+P . . . . . p .
+. . . . . p . .
+. R . . . P . .
+. . . . . K . .
+Player 1 sampled action: Bg8
+Next state:
+4k1B1/7p/p7/3P3P/P5p1/5p2/1R3P2/5K2 b - - 2 68
+. . . . k . B .
+. . . . . . . p
+p . . . . . . .
+. . . P . . . P
+P . . . . . p .
+. . . . . p . .
+. R . . . P . .
+. . . . . K . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: h6
+Next state:
+4k1B1/8/p6p/3P3P/P5p1/5p2/1R3P2/5K2 w - - 0 69
+. . . . k . B .
+. . . . . . . .
+p . . . . . . p
+. . . P . . . P
+P . . . . . p .
+. . . . . p . .
+. R . . . P . .
+. . . . . K . .
+Player 1 sampled action: Rb6
+Next state:
+4k1B1/8/pR5p/3P3P/P5p1/5p2/5P2/5K2 b - - 1 69
+. . . . k . B .
+. . . . . . . .
+p R . . . . . p
+. . . P . . . P
+P . . . . . p .
+. . . . . p . .
+. . . . . P . .
+. . . . . K . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: a5
+Next state:
+4k1B1/8/1R5p/p2P3P/P5p1/5p2/5P2/5K2 w - - 0 70
+. . . . k . B .
+. . . . . . . .
+. R . . . . . p
+p . . P . . . P
+P . . . . . p .
+. . . . . p . .
+. . . . . P . .
+. . . . . K . .
+Player 1 sampled action: Rb7
+Next state:
+4k1B1/1R6/7p/p2P3P/P5p1/5p2/5P2/5K2 b - - 1 70
+. . . . k . B .
+. R . . . . . .
+. . . . . . . p
+p . . P . . . P
+P . . . . . p .
+. . . . . p . .
+. . . . . P . .
+. . . . . K . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: g3
+Next state:
+4k1B1/1R6/7p/p2P3P/P7/5pp1/5P2/5K2 w - - 0 71
+. . . . k . B .
+. R . . . . . .
+. . . . . . . p
+p . . P . . . P
+P . . . . . . .
+. . . . . p p .
+. . . . . P . .
+. . . . . K . .
+Player 1 sampled action: Rc7
+Next state:
+4k1B1/2R5/7p/p2P3P/P7/5pp1/5P2/5K2 b - - 1 71
+. . . . k . B .
+. . R . . . . .
+. . . . . . . p
+p . . P . . . P
+P . . . . . . .
+. . . . . p p .
+. . . . . P . .
+. . . . . K . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: gxf2
+Next state:
+4k1B1/2R5/7p/p2P3P/P7/5p2/5p2/5K2 w - - 0 72
+. . . . k . B .
+. . R . . . . .
+. . . . . . . p
+p . . P . . . P
+P . . . . . . .
+. . . . . p . .
+. . . . . p . .
+. . . . . K . .
+Player 1 sampled action: Rd7
+Next state:
+4k1B1/3R4/7p/p2P3P/P7/5p2/5p2/5K2 b - - 1 72
+. . . . k . B .
+. . . R . . . .
+. . . . . . . p
+p . . P . . . P
+P . . . . . . .
+. . . . . p . .
+. . . . . p . .
+. . . . . K . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Kxd7
+Next state:
+6B1/3k4/7p/p2P3P/P7/5p2/5p2/5K2 w - - 0 73
+. . . . . . B .
+. . . k . . . .
+. . . . . . . p
+p . . P . . . P
+P . . . . . . .
+. . . . . p . .
+. . . . . p . .
+. . . . . K . .
+Player 1 sampled action: Bh7
+Next state:
+8/3k3B/7p/p2P3P/P7/5p2/5p2/5K2 b - - 1 73
+. . . . . . . .
+. . . k . . . B
+. . . . . . . p
+p . . P . . . P
+P . . . . . . .
+. . . . . p . .
+. . . . . p . .
+. . . . . K . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Kc8
+Next state:
+2k5/7B/7p/p2P3P/P7/5p2/5p2/5K2 w - - 2 74
+. . k . . . . .
+. . . . . . . B
+. . . . . . . p
+p . . P . . . P
+P . . . . . . .
+. . . . . p . .
+. . . . . p . .
+. . . . . K . .
+Player 1 sampled action: Bd3
+Next state:
+2k5/8/7p/p2P3P/P7/3B1p2/5p2/5K2 b - - 3 74
+. . k . . . . .
+. . . . . . . .
+. . . . . . . p
+p . . P . . . P
+P . . . . . . .
+. . . B . p . .
+. . . . . p . .
+. . . . . K . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Kd8
+Next state:
+3k4/8/7p/p2P3P/P7/3B1p2/5p2/5K2 w - - 4 75
+. . . k . . . .
+. . . . . . . .
+. . . . . . . p
+p . . P . . . P
+P . . . . . . .
+. . . B . p . .
+. . . . . p . .
+. . . . . K . .
+Player 1 sampled action: Ba6
+Next state:
+3k4/8/B6p/p2P3P/P7/5p2/5p2/5K2 b - - 5 75
+. . . k . . . .
+. . . . . . . .
+B . . . . . . p
+p . . P . . . P
+P . . . . . . .
+. . . . . p . .
+. . . . . p . .
+. . . . . K . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Kc7
+Next state:
+8/2k5/B6p/p2P3P/P7/5p2/5p2/5K2 w - - 6 76
+. . . . . . . .
+. . k . . . . .
+B . . . . . . p
+p . . P . . . P
+P . . . . . . .
+. . . . . p . .
+. . . . . p . .
+. . . . . K . .
+Player 1 sampled action: Be2
+Next state:
+8/2k5/7p/p2P3P/P7/5p2/4Bp2/5K2 b - - 7 76
+. . . . . . . .
+. . k . . . . .
+. . . . . . . p
+p . . P . . . P
+P . . . . . . .
+. . . . . p . .
+. . . . B p . .
+. . . . . K . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Kd8
+Next state:
+3k4/8/7p/p2P3P/P7/5p2/4Bp2/5K2 w - - 8 77
+. . . k . . . .
+. . . . . . . .
+. . . . . . . p
+p . . P . . . P
+P . . . . . . .
+. . . . . p . .
+. . . . B p . .
+. . . . . K . .
+Player 1 sampled action: Bd1
+Next state:
+3k4/8/7p/p2P3P/P7/5p2/5p2/3B1K2 b - - 9 77
+. . . k . . . .
+. . . . . . . .
+. . . . . . . p
+p . . P . . . P
+P . . . . . . .
+. . . . . p . .
+. . . . . p . .
+. . . B . K . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Ke7
+Next state:
+8/4k3/7p/p2P3P/P7/5p2/5p2/3B1K2 w - - 10 78
+. . . . . . . .
+. . . . k . . .
+. . . . . . . p
+p . . P . . . P
+P . . . . . . .
+. . . . . p . .
+. . . . . p . .
+. . . B . K . .
+Player 1 sampled action: Be2
+Next state:
+8/4k3/7p/p2P3P/P7/5p2/4Bp2/5K2 b - - 11 78
+. . . . . . . .
+. . . . k . . .
+. . . . . . . p
+p . . P . . . P
+P . . . . . . .
+. . . . . p . .
+. . . . B p . .
+. . . . . K . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Kd8
+Next state:
+3k4/8/7p/p2P3P/P7/5p2/4Bp2/5K2 w - - 12 79
+. . . k . . . .
+. . . . . . . .
+. . . . . . . p
+p . . P . . . P
+P . . . . . . .
+. . . . . p . .
+. . . . B p . .
+. . . . . K . .
+Player 1 sampled action: Ba6
+Next state:
+3k4/8/B6p/p2P3P/P7/5p2/5p2/5K2 b - - 13 79
+. . . k . . . .
+. . . . . . . .
+B . . . . . . p
+p . . P . . . P
+P . . . . . . .
+. . . . . p . .
+. . . . . p . .
+. . . . . K . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Ke7
+Next state:
+8/4k3/B6p/p2P3P/P7/5p2/5p2/5K2 w - - 14 80
+. . . . . . . .
+. . . . k . . .
+B . . . . . . p
+p . . P . . . P
+P . . . . . . .
+. . . . . p . .
+. . . . . p . .
+. . . . . K . .
+Player 1 sampled action: Bd3
+Next state:
+8/4k3/7p/p2P3P/P7/3B1p2/5p2/5K2 b - - 15 80
+. . . . . . . .
+. . . . k . . .
+. . . . . . . p
+p . . P . . . P
+P . . . . . . .
+. . . B . p . .
+. . . . . p . .
+. . . . . K . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Kd6
+Next state:
+8/8/3k3p/p2P3P/P7/3B1p2/5p2/5K2 w - - 16 81
+. . . . . . . .
+. . . . . . . .
+. . . k . . . p
+p . . P . . . P
+P . . . . . . .
+. . . B . p . .
+. . . . . p . .
+. . . . . K . .
+Player 1 sampled action: Bg6
+Next state:
+8/8/3k2Bp/p2P3P/P7/5p2/5p2/5K2 b - - 17 81
+. . . . . . . .
+. . . . . . . .
+. . . k . . B p
+p . . P . . . P
+P . . . . . . .
+. . . . . p . .
+. . . . . p . .
+. . . . . K . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Kxd5
+Next state:
+8/8/6Bp/p2k3P/P7/5p2/5p2/5K2 w - - 0 82
+. . . . . . . .
+. . . . . . . .
+. . . . . . B p
+p . . k . . . P
+P . . . . . . .
+. . . . . p . .
+. . . . . p . .
+. . . . . K . .
+Player 1 sampled action: Bh7
+Next state:
+8/7B/7p/p2k3P/P7/5p2/5p2/5K2 b - - 1 82
+. . . . . . . .
+. . . . . . . B
+. . . . . . . p
+p . . k . . . P
+P . . . . . . .
+. . . . . p . .
+. . . . . p . .
+. . . . . K . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Kd6
+Next state:
+8/7B/3k3p/p6P/P7/5p2/5p2/5K2 w - - 2 83
+. . . . . . . .
+. . . . . . . B
+. . . k . . . p
+p . . . . . . P
+P . . . . . . .
+. . . . . p . .
+. . . . . p . .
+. . . . . K . .
+Player 1 sampled action: Bg6
+Next state:
+8/8/3k2Bp/p6P/P7/5p2/5p2/5K2 b - - 3 83
+. . . . . . . .
+. . . . . . . .
+. . . k . . B p
+p . . . . . . P
+P . . . . . . .
+. . . . . p . .
+. . . . . p . .
+. . . . . K . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Kc6
+Next state:
+8/8/2k3Bp/p6P/P7/5p2/5p2/5K2 w - - 4 84
+. . . . . . . .
+. . . . . . . .
+. . k . . . B p
+p . . . . . . P
+P . . . . . . .
+. . . . . p . .
+. . . . . p . .
+. . . . . K . .
+Player 1 sampled action: Bh7
+Next state:
+8/7B/2k4p/p6P/P7/5p2/5p2/5K2 b - - 5 84
+. . . . . . . .
+. . . . . . . B
+. . k . . . . p
+p . . . . . . P
+P . . . . . . .
+. . . . . p . .
+. . . . . p . .
+. . . . . K . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Kb6
+Next state:
+8/7B/1k5p/p6P/P7/5p2/5p2/5K2 w - - 6 85
+. . . . . . . .
+. . . . . . . B
+. k . . . . . p
+p . . . . . . P
+P . . . . . . .
+. . . . . p . .
+. . . . . p . .
+. . . . . K . .
+Player 1 sampled action: Bg6
+Next state:
+8/8/1k4Bp/p6P/P7/5p2/5p2/5K2 b - - 7 85
+. . . . . . . .
+. . . . . . . .
+. k . . . . B p
+p . . . . . . P
+P . . . . . . .
+. . . . . p . .
+. . . . . p . .
+. . . . . K . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Kc6
+Next state:
+8/8/2k3Bp/p6P/P7/5p2/5p2/5K2 w - - 8 86
+. . . . . . . .
+. . . . . . . .
+. . k . . . B p
+p . . . . . . P
+P . . . . . . .
+. . . . . p . .
+. . . . . p . .
+. . . . . K . .
+Player 1 sampled action: Bc2
+Next state:
+8/8/2k4p/p6P/P7/5p2/2B2p2/5K2 b - - 9 86
+. . . . . . . .
+. . . . . . . .
+. . k . . . . p
+p . . . . . . P
+P . . . . . . .
+. . . . . p . .
+. . B . . p . .
+. . . . . K . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Kd7
+Next state:
+8/3k4/7p/p6P/P7/5p2/2B2p2/5K2 w - - 10 87
+. . . . . . . .
+. . . k . . . .
+. . . . . . . p
+p . . . . . . P
+P . . . . . . .
+. . . . . p . .
+. . B . . p . .
+. . . . . K . .
+Player 1 sampled action: Bg6
+Next state:
+8/3k4/6Bp/p6P/P7/5p2/5p2/5K2 b - - 11 87
+. . . . . . . .
+. . . k . . . .
+. . . . . . B p
+p . . . . . . P
+P . . . . . . .
+. . . . . p . .
+. . . . . p . .
+. . . . . K . .
+Bot 0 couldn't find a valid move. Choosing randomly.
+Player 0 sampled action: Kc6
+Next state:
+8/8/2k3Bp/p6P/P7/5p2/5p2/5K2 w - - 12 88
+. . . . . . . .
+. . . . . . . .
+. . k . . . B p
+p . . . . . . P
+P . . . . . . .
+. . . . . p . .
+. . . . . p . .
+. . . . . K . .
+Returns: 0.0 0.0 , Game actions: e4 a6 c3 Nf6 Nh3 Rg8 Ng1 d5 Na3 Bg4 Qf3 Kd7 Nb5 Ne8 Qxg4+ e6 h4 f6 Ne2 Kc6 Nd6 g6 Qf4 dxe4 h5 Rg7 d3 b5 g3 Qc8 Kd1 Bxd6 Nd4+ Kd7 Bh3 c5 Ke1 Ke7 Rb1 e3 Rf1 Bc7 Bg4 Nd7 Nxe6 Rg8 Qd4 Kf7 Be2 Be5 Bxe3 Bf4 Rd1 c4 Rh1 Qd8 Rh4 Ne5 Bf1 g5 Rxf4 Rb8 Qxd8 Nf3+ Rxf3 f5 Bh3 Rh8 Ra1 Kg8 Bb6 Rxb6 d4 Rd6 Qb6 Nf6 Kf1 Ne4 Rd1 Nxg3+ Ke1 Nh1 Bg4 Rxb6 d5 f4 Rb1 Ng3 a4 b4 Re3 Kf7 Be2 Kg8 Bd3 Ne2 Rxe2 f3 Bc2 Rxe6 Rc1 bxc3 Re3 Rc6 Rd3 g4 Re3 Rh6 Bf5 Re6 Bxe6+ Kg7 Rcxc3 Rb8 Rxc4 Rb6 Rd3 Rb3 Rf4 Rb5 Rf8 Rc5 Rd8 Rc3 Rd4 Re3+ Kf1 Rb3 Rd2 Rxb2 Rf8 Kxf8 Rxb2 Ke8 Bg8 h6 Rb6 a5 Rb7 g3 Rc7 gxf2 Rd7 Kxd7 Bh7 Kc8 Bd3 Kd8 Ba6 Kc7 Be2 Kd8 Bd1 Ke7 Be2 Kd8 Ba6 Ke7 Bd3 Kd6 Bg6 Kxd5 Bh7 Kd6 Bg6 Kc6 Bh7 Kb6 Bg6 Kc6 Bc2 Kd7 Bg6 Kc6
+Number of games played: 1
+Number of distinct games played: 1
+Players: ga random
+Overall wins [0, 0]
+Overall returns [0.0, 0.0]
