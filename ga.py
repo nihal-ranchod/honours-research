@@ -9,13 +9,16 @@ from functools import partial
 import pyspiel
 
 class GeneticAlgorithmChessBot:
-    def __init__(self, player_id, population_size=100, generations=50, mutation_rate=0.1, crossover_rate=0.8, max_games=1000):
+    def __init__(self, player_id, population_size=200, generations=200, mutation_rate=0.1, crossover_rate=0.8, max_games=2000, search_depth=4):
         self.player_id = player_id
         self.population_size = population_size
         self.generations = generations
         self.mutation_rate = mutation_rate
         self.crossover_rate = crossover_rate
         self.max_games = max_games
+        self.search_depth = search_depth
+        self.early_stopping_patience = 3
+        self.fitness_threshold = 10000 
         self.piece_values = {
             chess.PAWN: 100, chess.KNIGHT: 320, chess.BISHOP: 330,
             chess.ROOK: 500, chess.QUEEN: 900, chess.KING: 20000
@@ -118,6 +121,33 @@ class GeneticAlgorithmChessBot:
                 total_score += score if board.turn == chess.WHITE else -score
         return total_score / len(games)
 
+    def _minimax(self, board, depth, alpha, beta, maximizing_player):
+        if depth == 0 or board.is_game_over():
+            return self._evaluate_board(board, self.best_individual)
+
+        if maximizing_player:
+            max_eval = float('-inf')
+            for move in board.legal_moves:
+                board.push(move)
+                eval = self._minimax(board, depth - 1, alpha, beta, False)
+                board.pop()
+                max_eval = max(max_eval, eval)
+                alpha = max(alpha, eval)
+                if beta <= alpha:
+                    break
+            return max_eval
+        else:
+            min_eval = float('inf')
+            for move in board.legal_moves:
+                board.push(move)
+                eval = self._minimax(board, depth - 1, alpha, beta, True)
+                board.pop()
+                min_eval = min(min_eval, eval)
+                beta = min(beta, eval)
+                if beta <= alpha:
+                    break
+            return min_eval
+
     def train(self, pgn_file):
         population = [self._initialize_individual() for _ in range(self.population_size)]
         
@@ -127,15 +157,33 @@ class GeneticAlgorithmChessBot:
         pool = multiprocessing.Pool()
         evaluate_partial = partial(self._evaluate_individual, games=games)
 
+        best_fitness = float('-inf')
+        generations_without_improvement = 0
+
         for generation in range(self.generations):
             fitness_scores = pool.map(evaluate_partial, population)
             
-            best_fitness = max(fitness_scores)
+            current_best_fitness = max(fitness_scores)
             avg_fitness = sum(fitness_scores) / len(fitness_scores)
-            self.training_progress.append((best_fitness, avg_fitness))
+            self.training_progress.append((current_best_fitness, avg_fitness))
             
-            print(f"Generation {generation + 1}: Best Fitness = {best_fitness:.2f}, Avg Fitness = {avg_fitness:.2f}, Games: {len(games)}")
+            print(f"Generation {generation + 1}: Best Fitness = {current_best_fitness:.2f}, Avg Fitness = {avg_fitness:.2f}, Games: {len(games)}")
             
+            # Early stopping checks
+            if current_best_fitness > best_fitness:
+                best_fitness = current_best_fitness
+                generations_without_improvement = 0
+            else:
+                generations_without_improvement += 1
+
+            if generations_without_improvement >= self.early_stopping_patience:
+                print(f"Early stopping: No improvement for {self.early_stopping_patience} generations.")
+                break
+
+            if current_best_fitness >= self.fitness_threshold:
+                print(f"Early stopping: Fitness threshold {self.fitness_threshold} reached.")
+                break
+
             new_population = []
             elite_count = self.population_size // 10
             elite_indices = np.argsort(fitness_scores)[-elite_count:]
@@ -168,55 +216,31 @@ class GeneticAlgorithmChessBot:
                 games.append(game)
         return games
 
-    def step(self, state):
-        try:
-            board = chess.Board(state.observation_string())
-            legal_moves = list(board.legal_moves)
-            
-            if not legal_moves:
-                return None
+    def _chess_move_to_openspiel_action(self, board, chess_move):
+        """Convert a chess.Move to an OpenSpiel action (integer)."""
+        from_square = chess_move.from_square
+        to_square = chess_move.to_square
 
-            best_move = None
-            best_score = float('-inf')
+        # Check if it's an en passant capture
+        if board.is_en_passant(chess_move):
+            # For en passant, we need to encode it differently
+            # The format is: (from_square * 64 + to_square) + 64 * 64
+            return (from_square * 64 + to_square) + 64 * 64
+        
+        # Check if it's a promotion
+        if chess_move.promotion:
+            # For promotions, we need to encode the promotion piece
+            # The format is: (from_square * 64 + to_square) + piece_type * 64 * 64
+            piece_type_offset = {
+                chess.KNIGHT: 1,
+                chess.BISHOP: 2,
+                chess.ROOK: 3,
+                chess.QUEEN: 4
+            }
+            return (from_square * 64 + to_square) + piece_type_offset[chess_move.promotion] * 64 * 64
 
-            for move in legal_moves:
-                board.push(move)
-                score = self._evaluate_board(board, self.best_individual)
-                board.pop()
-
-                if score > best_score:
-                    best_score = score
-                    best_move = move
-
-            if best_move is None:
-                return None
-
-            # Convert chess.Move to OpenSpiel action
-            from_square = best_move.from_square
-            to_square = best_move.to_square
-            action = from_square * 64 + to_square
-
-            # Handle promotions
-            if best_move.promotion:
-                promotion_piece = {
-                    chess.QUEEN: 0,
-                    chess.ROOK: 1,
-                    chess.BISHOP: 2,
-                    chess.KNIGHT: 3
-                }[best_move.promotion]
-                action = 64 * 64 + from_square * 64 + to_square + promotion_piece * (64 * 64)
-
-            # Verify if the action is legal in OpenSpiel's representation
-            if action not in state.legal_actions():
-                # If not, fall back to a random legal action
-                return random.choice(state.legal_actions())
-
-            return action
-
-        except pyspiel.SpielError as e:
-            print(f"Error in step method: {e}")
-            # Fall back to a random legal action
-            return random.choice(state.legal_actions())
+        # Regular move
+        return from_square * 64 + to_square
 
     def get_best_move(self, board):
         legal_moves = list(board.legal_moves)
@@ -228,14 +252,42 @@ class GeneticAlgorithmChessBot:
         
         for move in legal_moves:
             board.push(move)
-            score = self._evaluate_board(board, self.best_individual)
+            score = self._minimax(board, self.search_depth - 1, float('-inf'), float('inf'), False)
             board.pop()
             
             if score > best_score:
                 best_score = score
                 best_move = move
         
-        return best_move
+        if best_move is None:
+            return None
+        
+        # Convert the chess.Move to an OpenSpiel action
+        return self._chess_move_to_openspiel_action(board, best_move)
+
+    def step(self, state):
+        """
+        This method is called by the OpenSpiel framework.
+        It should return an action (integer) compatible with OpenSpiel.
+        """
+        board = chess.Board(fen=str(state))
+        return self.get_best_move(board)
+
+    def inform_action(self, state, player_id, action):
+        """
+        This method is called to inform the bot about actions taken by other players.
+        For the GA bot, we don't need to do anything here, but we need to implement it
+        to conform to the bot interface expected by OpenSpiel.
+        """
+        pass
+
+    def restart(self):
+        """
+        This method is called when a game ends and a new one is about to start.
+        For the GA bot, we don't need to do anything here, but we need to implement it
+        to conform to the bot interface expected by OpenSpiel.
+        """
+        pass
 
     def plot_learning_curve(self):
         generations = range(1, len(self.training_progress) + 1)
@@ -258,7 +310,6 @@ class GeneticAlgorithmChessBot:
     def load_model(self, filename):
         with open(filename, 'rb') as f:
             self.best_individual = pickle.load(f)
-
     def inform_action(self, state, player_id, action):
         pass
 

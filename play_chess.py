@@ -69,13 +69,16 @@ flags.DEFINE_bool("solve", True, "Whether to use MCTS-Solver.")
 flags.DEFINE_bool("quiet", False, "Don't show the moves as they're played.")
 flags.DEFINE_bool("verbose", False, "Show the MCTS stats of possible moves.")
 
-flags.DEFINE_integer("ga_population_size", 75, "Population size for GA bot.")
-flags.DEFINE_integer("ga_generations", 50, "Number of generations for GA bot training.")
+flags.DEFINE_integer("ga_population_size", 100, "Population size for GA bot.")
+flags.DEFINE_integer("ga_generations", 200, "Number of generations for GA bot training.")
 flags.DEFINE_float("ga_mutation_rate", 0.2, "Mutation rate for GA bot.")
 flags.DEFINE_float("ga_crossover_rate", 0.8, "Crossover rate for GA bot.")
 flags.DEFINE_bool("train_ga", False, "Whether to train a new GA model or load a pre-trained one.")
 flags.DEFINE_string("ga_model_file", "chess_ga_model.pkl", "File to save/load GA model.")
 flags.DEFINE_integer("ga_max_games", 1000, "Maximum number of games to use for GA training.")
+flags.DEFINE_integer("ga_search_depth", 3, "Search depth for GA bot's minimax algorithm.")
+flags.DEFINE_integer("ga_early_stopping_patience", 10, "Number of generations without improvement before early stopping.")
+flags.DEFINE_float("ga_fitness_threshold", 10000, "Fitness threshold for early stopping.")
 
 # Add a constant for the PGN file path
 PGN_FILE_PATH = os.path.join("PGN_Data", "lichess_db_standard_rated_2013-01.pgn")
@@ -97,8 +100,12 @@ def _init_bot(bot_type, game, player_id):
         generations=FLAGS.ga_generations,
         mutation_rate=FLAGS.ga_mutation_rate,
         crossover_rate=FLAGS.ga_crossover_rate,
-        max_games=FLAGS.ga_max_games
+        max_games=FLAGS.ga_max_games,
+        search_depth=FLAGS.ga_search_depth
     )
+    ga_bot.early_stopping_patience = FLAGS.ga_early_stopping_patience
+    ga_bot.fitness_threshold = FLAGS.ga_fitness_threshold
+
     if FLAGS.train_ga:
         ga_bot.train(PGN_FILE_PATH)
         ga_bot.plot_learning_curve()
@@ -158,70 +165,60 @@ def _get_action(state, action_str):
   return None
 
 def _play_game(game, bots, initial_actions):
-  """Plays one game."""
-  state = game.new_initial_state()
-  _opt_print("Initial state:\n{}".format(state))
+    """Plays one game."""
+    state = game.new_initial_state()
+    _opt_print("Initial state:\n{}".format(state))
 
-  history = []
-  # If the 'random_first' flag is set, a random initial action is chosen
-  if FLAGS.random_first:
-    assert not initial_actions
-    initial_actions = [state.action_to_string(
-        state.current_player(), random.choice(state.legal_actions()))]
+    history = []
+    # If the 'random_first' flag is set, a random initial action is chosen
+    if FLAGS.random_first:
+        assert not initial_actions
+        initial_actions = [state.action_to_string(
+            state.current_player(), random.choice(state.legal_actions()))]
 
-  for action_str in initial_actions:
-    action = _get_action(state, action_str)
-    if action is None:
-      sys.exit("Invalid action: {}".format(action_str))
+    for action_str in initial_actions:
+        action = _get_action(state, action_str)
+        if action is None:
+            sys.exit("Invalid action: {}".format(action_str))
 
-    history.append(action_str)
+        history.append(action_str)
+        for bot in bots:
+            bot.inform_action(state, state.current_player(), action)
+        state.apply_action(action)
+        _opt_print("Forced action", action_str)
+        _opt_print("Next state:\n{}".format(state))
+        _opt_print(chess.Board(fen=str(state)))
+
+    while not state.is_terminal():
+        current_player = state.current_player()
+        bot = bots[current_player]
+        
+        action = bot.step(state)
+        if action is None or action not in state.legal_actions():
+            print(f"Bot {current_player} couldn't find a valid move. Choosing randomly.")
+            action = random.choice(state.legal_actions())
+
+        action_str = state.action_to_string(current_player, action)
+        _opt_print("Player {} sampled action: {}".format(current_player, action_str))
+
+        for i, bot in enumerate(bots):
+            if i != current_player:
+                bot.inform_action(state, current_player, action)
+        history.append(action_str)
+        state.apply_action(action)
+
+        _opt_print("Next state:\n{}".format(state))
+        _opt_print(chess.Board(fen=str(state)))
+
+    # Game is now done. Print return for each player
+    returns = state.returns()
+    print("Returns:", " ".join(map(str, returns)), ", Game actions:",
+          " ".join(history))
+
     for bot in bots:
-      bot.inform_action(state, state.current_player(), action)
-    state.apply_action(action)
-    _opt_print("Forced action", action_str)
-    _opt_print("Next state:\n{}".format(state))
-    _opt_print(chess.Board(fen=str(state)))
-  while not state.is_terminal():
-    current_player = state.current_player()
-    # The state can be three different types: chance node,
-    # simultaneous node, or decision node
-    if state.is_chance_node():
-      # Chance node: sample an outcome
-      outcomes = state.chance_outcomes()
-      num_actions = len(outcomes)
-      _opt_print("Chance node, got " + str(num_actions) + " outcomes")
-      action_list, prob_list = zip(*outcomes)
-      action = np.random.choice(action_list, p=prob_list)
-      action_str = state.action_to_string(current_player, action)
-      _opt_print("Sampled action: ", action_str)
-    elif state.is_simultaneous_node():
-      raise ValueError("Game cannot have simultaneous nodes.")
-    else:
-      # Decision node: sample action for the single current player
-      bot = bots[current_player]
-      action = bot.step(state)
-      action_str = state.action_to_string(current_player, action)
-      _opt_print("Player {} sampled action: {}".format(current_player,
-                                                       action_str))
+        bot.restart()
 
-    for i, bot in enumerate(bots):
-      if i != current_player:
-        bot.inform_action(state, current_player, action)
-    history.append(action_str)
-    state.apply_action(action)
-
-    _opt_print("Next state:\n{}".format(state))
-    _opt_print(chess.Board(fen=str(state)))
-
-  # Game is now done. Print return for each player
-  returns = state.returns()
-  print("Returns:", " ".join(map(str, returns)), ", Game actions:",
-        " ".join(history))
-
-  for bot in bots:
-    bot.restart()
-
-  return returns, history
+    return returns, history
 
 
 def main(argv):
