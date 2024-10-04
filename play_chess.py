@@ -70,15 +70,15 @@ flags.DEFINE_bool("quiet", False, "Don't show the moves as they're played.")
 flags.DEFINE_bool("verbose", False, "Show the MCTS stats of possible moves.")
 
 flags.DEFINE_integer("ga_population_size", 100, "Population size for GA bot.")
-flags.DEFINE_integer("ga_generations", 200, "Number of generations for GA bot training.")
-flags.DEFINE_float("ga_mutation_rate", 0.2, "Mutation rate for GA bot.")
-flags.DEFINE_float("ga_crossover_rate", 0.8, "Crossover rate for GA bot.")
+flags.DEFINE_integer("ga_generations", 1000, "Number of generations for GA bot training.")
+flags.DEFINE_float("ga_mutation_rate", 0.005, "Mutation rate for GA bot.")
+flags.DEFINE_float("ga_crossover_rate", 0.75, "Crossover rate for GA bot.")
 flags.DEFINE_bool("train_ga", False, "Whether to train a new GA model or load a pre-trained one.")
 flags.DEFINE_string("ga_model_file", "chess_ga_model.pkl", "File to save/load GA model.")
 flags.DEFINE_integer("ga_max_games", 1000, "Maximum number of games to use for GA training.")
 flags.DEFINE_integer("ga_search_depth", 3, "Search depth for GA bot's minimax algorithm.")
 flags.DEFINE_integer("ga_early_stopping_patience", 10, "Number of generations without improvement before early stopping.")
-flags.DEFINE_float("ga_fitness_threshold", 10000, "Fitness threshold for early stopping.")
+
 
 # Add a constant for the PGN file path
 PGN_FILE_PATH = os.path.join("PGN_Data", "lichess_db_standard_rated_2013-01.pgn")
@@ -104,7 +104,6 @@ def _init_bot(bot_type, game, player_id):
         search_depth=FLAGS.ga_search_depth
     )
     ga_bot.early_stopping_patience = FLAGS.ga_early_stopping_patience
-    ga_bot.fitness_threshold = FLAGS.ga_fitness_threshold
 
     if FLAGS.train_ga:
         ga_bot.train(PGN_FILE_PATH)

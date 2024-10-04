@@ -9,7 +9,7 @@ from functools import partial
 import pyspiel
 
 class GeneticAlgorithmChessBot:
-    def __init__(self, player_id, population_size=200, generations=200, mutation_rate=0.1, crossover_rate=0.8, max_games=2000, search_depth=4):
+    def __init__(self, player_id, population_size=200, generations=1000, mutation_rate=0.005, crossover_rate=0.75, max_games=2000, search_depth=4):
         self.player_id = player_id
         self.population_size = population_size
         self.generations = generations
@@ -17,8 +17,7 @@ class GeneticAlgorithmChessBot:
         self.crossover_rate = crossover_rate
         self.max_games = max_games
         self.search_depth = search_depth
-        self.early_stopping_patience = 3
-        self.fitness_threshold = 10000 
+        self.early_stopping_patience = 50
         self.piece_values = {
             chess.PAWN: 100, chess.KNIGHT: 320, chess.BISHOP: 330,
             chess.ROOK: 500, chess.QUEEN: 900, chess.KING: 20000
@@ -169,19 +168,15 @@ class GeneticAlgorithmChessBot:
             
             print(f"Generation {generation + 1}: Best Fitness = {current_best_fitness:.2f}, Avg Fitness = {avg_fitness:.2f}, Games: {len(games)}")
             
-            # Early stopping checks
             if current_best_fitness > best_fitness:
                 best_fitness = current_best_fitness
                 generations_without_improvement = 0
+                self.best_individual = population[fitness_scores.index(current_best_fitness)]
             else:
                 generations_without_improvement += 1
 
             if generations_without_improvement >= self.early_stopping_patience:
                 print(f"Early stopping: No improvement for {self.early_stopping_patience} generations.")
-                break
-
-            if current_best_fitness >= self.fitness_threshold:
-                print(f"Early stopping: Fitness threshold {self.fitness_threshold} reached.")
                 break
 
             new_population = []
@@ -204,7 +199,8 @@ class GeneticAlgorithmChessBot:
         pool.close()
         pool.join()
         
-        self.best_individual = population[fitness_scores.index(max(fitness_scores))]
+        print(f"Training completed. Best fitness: {best_fitness:.2f}")
+        self.plot_learning_curve()
 
     def _load_pgn(self, pgn_file):
         games = []
