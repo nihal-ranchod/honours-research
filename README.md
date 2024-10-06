@@ -14,6 +14,7 @@ pip install chess.com
 pip install pandas
 pip install ches.pgn
 pip install pyspiel
+pip install tqdm
 ```
 
 ### To run a single game of Monte Carlo Tree Search Variants:

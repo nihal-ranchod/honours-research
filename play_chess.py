@@ -25,7 +25,7 @@ import pyspiel
 
 # Add created Agents
 import mcts_algorithm as mcts
-from ga_algorithm import GeneticAlgorithmBot
+from ga import GeneticAlgorithmBot
 
 import matplotlib.pyplot as plt
 
@@ -54,7 +54,7 @@ _KNOWN_PLAYERS = [
 
 flags.DEFINE_string("game", "chess", "Name of the game.")
 flags.DEFINE_enum("player1", "ga", _KNOWN_PLAYERS, "Who controls player 1.")
-flags.DEFINE_enum("player2", "mcts", _KNOWN_PLAYERS, "Who controls player 2.")
+flags.DEFINE_enum("player2", "random", _KNOWN_PLAYERS, "Who controls player 2.")
 flags.DEFINE_string("gtp_path", None, "Where to find a binary for gtp.")
 flags.DEFINE_multi_string("gtp_cmd", [], "GTP commands to run at init.")
 flags.DEFINE_string("az_path", None, "Path to an alpha_zero checkpoint. Needed by an az player.")
@@ -68,13 +68,19 @@ flags.DEFINE_bool("solve", True, "Whether to use MCTS-Solver.")
 flags.DEFINE_bool("quiet", False, "Don't show the moves as they're played.")
 flags.DEFINE_bool("verbose", False, "Show the MCTS stats of possible moves.")
 
-flags.DEFINE_integer("population_size", 100, "Size of the population.")
-flags.DEFINE_float("mutation_rate", 0.3, "Mutation rate.")
-flags.DEFINE_float("crossover_rate", 0.7, "Crossover rate.")
-flags.DEFINE_integer("num_generations", 10, "Number of generations.")
-
+# flags.DEFINE_integer("ga_population_size", 100, "Population size for GA bot.")
+# flags.DEFINE_integer("ga_generations", 1000, "Number of generations for GA bot training.")
+# flags.DEFINE_float("ga_mutation_rate", 0.005, "Mutation rate for GA bot.")
+# flags.DEFINE_float("ga_crossover_rate", 0.75, "Crossover rate for GA bot.")
 flags.DEFINE_bool("train_ga", False, "Whether to train a new GA model or load a pre-trained one.")
-flags.DEFINE_string("ga_weights_file", "ga_weights.pkl", "File to save/load GA weights.")
+flags.DEFINE_string("ga_weights_file", "chess_ga_model.pkl", "File to save/load GA model.")
+# flags.DEFINE_integer("ga_max_games", 1000, "Maximum number of games to use for GA training.")
+# flags.DEFINE_integer("ga_search_depth", 3, "Search depth for GA bot's minimax algorithm.")
+# flags.DEFINE_integer("ga_early_stopping_patience", 10, "Number of generations without improvement before early stopping.")
+
+
+# Add a constant for the PGN file path
+PGN_FILE_PATH = os.path.join("PGN_Data", "lichess_db_standard_rated_2013-01.pgn")
 
 FLAGS = flags.FLAGS
 
@@ -86,6 +92,21 @@ def _opt_print(*args, **kwargs):
 def _init_bot(bot_type, game, player_id):
   """Initializes a bot by type."""
   rng = np.random.RandomState(FLAGS.seed)
+  if bot_type == "ga":
+    ga_bot = GeneticAlgorithmBot()
+    if FLAGS.train_ga:
+        ga_bot.train(num_games=200)
+        ga_bot.save_weights(FLAGS.ga_weights_file)
+        ga_bot.plot_learning_progress()  
+    else:
+        try:
+            ga_bot.load_weights(FLAGS.ga_weights_file)
+        except FileNotFoundError:
+            print("Weights file not found, training new model...")
+            ga_bot.train(num_games=200)
+            ga_bot.save_weights(FLAGS.ga_weights_file)
+            ga_bot.plot_learning_progress()
+    return ga_bot
   if bot_type == "mcts":
     evaluator = mcts.RandomRolloutEvaluator(FLAGS.rollout_count, rng)
     return mcts.MCTSBot(
@@ -118,21 +139,6 @@ def _init_bot(bot_type, game, player_id):
         random_state=rng,
         solve=FLAGS.solve,
         verbose=FLAGS.verbose)
-  if bot_type == "ga":
-    ga_bot = GeneticAlgorithmBot()
-    if FLAGS.train_ga:
-      ga_bot.train(num_games=200)  # Increased number of games for better evaluation
-      ga_bot.save_weights(FLAGS.ga_weights_file)
-      plt.show()  # This will display the training progress plot
-    else:
-      try:
-        ga_bot.load_weights(FLAGS.ga_weights_file)
-      except FileNotFoundError:
-        print(f"Pre-trained weights not found. Training new model...")
-        ga_bot.train(num_games=200)
-        ga_bot.save_weights(FLAGS.ga_weights_file)
-        plt.show() 
-    return ga_bot
   if bot_type == "random":
     return uniform_random.UniformRandomBot(player_id, rng)
   if bot_type == "human":
@@ -147,70 +153,60 @@ def _get_action(state, action_str):
   return None
 
 def _play_game(game, bots, initial_actions):
-  """Plays one game."""
-  state = game.new_initial_state()
-  _opt_print("Initial state:\n{}".format(state))
+    """Plays one game."""
+    state = game.new_initial_state()
+    _opt_print("Initial state:\n{}".format(state))
 
-  history = []
-  # If the 'random_first' flag is set, a random initial action is chosen
-  if FLAGS.random_first:
-    assert not initial_actions
-    initial_actions = [state.action_to_string(
-        state.current_player(), random.choice(state.legal_actions()))]
+    history = []
+    # If the 'random_first' flag is set, a random initial action is chosen
+    if FLAGS.random_first:
+        assert not initial_actions
+        initial_actions = [state.action_to_string(
+            state.current_player(), random.choice(state.legal_actions()))]
 
-  for action_str in initial_actions:
-    action = _get_action(state, action_str)
-    if action is None:
-      sys.exit("Invalid action: {}".format(action_str))
+    for action_str in initial_actions:
+        action = _get_action(state, action_str)
+        if action is None:
+            sys.exit("Invalid action: {}".format(action_str))
 
-    history.append(action_str)
+        history.append(action_str)
+        for bot in bots:
+            bot.inform_action(state, state.current_player(), action)
+        state.apply_action(action)
+        _opt_print("Forced action", action_str)
+        _opt_print("Next state:\n{}".format(state))
+        _opt_print(chess.Board(fen=str(state)))
+
+    while not state.is_terminal():
+        current_player = state.current_player()
+        bot = bots[current_player]
+        
+        action = bot.step(state)
+        if action is None or action not in state.legal_actions():
+            print(f"Bot {current_player} couldn't find a valid move. Choosing randomly.")
+            action = random.choice(state.legal_actions())
+
+        action_str = state.action_to_string(current_player, action)
+        _opt_print("Player {} sampled action: {}".format(current_player, action_str))
+
+        for i, bot in enumerate(bots):
+            if i != current_player:
+                bot.inform_action(state, current_player, action)
+        history.append(action_str)
+        state.apply_action(action)
+
+        _opt_print("Next state:\n{}".format(state))
+        _opt_print(chess.Board(fen=str(state)))
+
+    # Game is now done. Print return for each player
+    returns = state.returns()
+    print("Returns:", " ".join(map(str, returns)), ", Game actions:",
+          " ".join(history))
+
     for bot in bots:
-      bot.inform_action(state, state.current_player(), action)
-    state.apply_action(action)
-    _opt_print("Forced action", action_str)
-    _opt_print("Next state:\n{}".format(state))
-    # _opt_print(chess.Board(fen=str(state)))
-  while not state.is_terminal():
-    current_player = state.current_player()
-    # The state can be three different types: chance node,
-    # simultaneous node, or decision node
-    if state.is_chance_node():
-      # Chance node: sample an outcome
-      outcomes = state.chance_outcomes()
-      num_actions = len(outcomes)
-      _opt_print("Chance node, got " + str(num_actions) + " outcomes")
-      action_list, prob_list = zip(*outcomes)
-      action = np.random.choice(action_list, p=prob_list)
-      action_str = state.action_to_string(current_player, action)
-      _opt_print("Sampled action: ", action_str)
-    elif state.is_simultaneous_node():
-      raise ValueError("Game cannot have simultaneous nodes.")
-    else:
-      # Decision node: sample action for the single current player
-      bot = bots[current_player]
-      action = bot.step(state)
-      action_str = state.action_to_string(current_player, action)
-      _opt_print("Player {} sampled action: {}".format(current_player,
-                                                       action_str))
+        bot.restart()
 
-    for i, bot in enumerate(bots):
-      if i != current_player:
-        bot.inform_action(state, current_player, action)
-    history.append(action_str)
-    state.apply_action(action)
-
-    _opt_print("Next state:\n{}".format(state))
-    # _opt_print(chess.Board(fen=str(state)))
-
-  # Game is now done. Print return for each player
-  returns = state.returns()
-  print("Returns:", " ".join(map(str, returns)), ", Game actions:",
-        " ".join(history))
-
-  for bot in bots:
-    bot.restart()
-
-  return returns, history
+    return returns, history
 
 
 def main(argv):
