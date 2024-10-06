@@ -1,2 +1,38 @@
-FATAL Flags parsing error: Unknown command line flag 'train_nfsp'. Did you mean: train_ga ?
-Pass --helpshort or --helpfull to see help on flags.
+2024-10-06 12:00:19.265777: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:485] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+2024-10-06 12:00:19.321360: E external/local_xla/xla/stream_executor/cuda/cuda_dnn.cc:8454] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+2024-10-06 12:00:19.338446: E external/local_xla/xla/stream_executor/cuda/cuda_blas.cc:1452] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+2024-10-06 12:00:24.939925: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+/home-mscluster/nranchod/miniconda3/envs/research/lib/python3.10/site-packages/keras/src/layers/core/dense.py:87: UserWarning: Do not pass an `input_shape`/`input_dim` argument to a layer. When using Sequential models, prefer using an `Input(shape)` object as the first layer in the model instead.
+  super().__init__(activity_regularizer=activity_regularizer, **kwargs)
+2024-10-06 12:00:33.769867: W tensorflow/core/common_runtime/gpu/gpu_device.cc:2343] Cannot dlopen some GPU libraries. Please make sure the missing libraries mentioned above are installed properly if you would like to use GPU. Follow the guide at https://www.tensorflow.org/install/gpu for how to download and setup the required libraries for your platform.
+Skipping registering GPU devices...
+Traceback (most recent call last):
+  File "/home-mscluster/nranchod/honours-research/nfsp_algorithm.py", line 165, in <module>
+    rewards = train_nfsp_agent(agent, num_episodes, stockfish_path)
+  File "/home-mscluster/nranchod/honours-research/nfsp_algorithm.py", line 105, in train_nfsp_agent
+    engine = chess.engine.SimpleEngine.popen_uci(stockfish_path)
+  File "/home-mscluster/nranchod/miniconda3/envs/research/lib/python3.10/site-packages/chess/engine.py", line 3054, in popen_uci
+    return cls.popen(UciProtocol, command, timeout=timeout, debug=debug, setpgrp=setpgrp, **popen_args)
+  File "/home-mscluster/nranchod/miniconda3/envs/research/lib/python3.10/site-packages/chess/engine.py", line 3046, in popen
+    return run_in_background(background, name=f"{cls.__name__} (command={command!r})", debug=debug)
+  File "/home-mscluster/nranchod/miniconda3/envs/research/lib/python3.10/site-packages/chess/engine.py", line 201, in run_in_background
+    return future.result()
+  File "/home-mscluster/nranchod/miniconda3/envs/research/lib/python3.10/concurrent/futures/_base.py", line 458, in result
+    return self.__get_result()
+  File "/home-mscluster/nranchod/miniconda3/envs/research/lib/python3.10/concurrent/futures/_base.py", line 403, in __get_result
+    raise self._exception
+  File "/home-mscluster/nranchod/miniconda3/envs/research/lib/python3.10/site-packages/chess/engine.py", line 195, in background
+    asyncio.run(coroutine(future))
+  File "/home-mscluster/nranchod/miniconda3/envs/research/lib/python3.10/asyncio/runners.py", line 44, in run
+    return loop.run_until_complete(main)
+  File "/home-mscluster/nranchod/miniconda3/envs/research/lib/python3.10/asyncio/base_events.py", line 649, in run_until_complete
+    return future.result()
+  File "/home-mscluster/nranchod/miniconda3/envs/research/lib/python3.10/site-packages/chess/engine.py", line 3038, in background
+    await asyncio.wait_for(protocol.initialize(), timeout)
+  File "/home-mscluster/nranchod/miniconda3/envs/research/lib/python3.10/asyncio/tasks.py", line 445, in wait_for
+    return fut.result()
+  File "/home-mscluster/nranchod/miniconda3/envs/research/lib/python3.10/site-packages/chess/engine.py", line 1510, in initialize
+    return await self.communicate(UciInitializeCommand)
+  File "/home-mscluster/nranchod/miniconda3/envs/research/lib/python3.10/site-packages/chess/engine.py", line 1133, in communicate
+    return await command.result
+chess.engine.EngineTerminatedError: engine process died unexpectedly (exit code: -4, binary not compatible with cpu?)
