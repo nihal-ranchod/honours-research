@@ -8,4 +8,4 @@
 source ~/.bashrc
 conda activate research
 
-python play_chess.py --train_nfsp=True
+python nfsp_algorithm.py
