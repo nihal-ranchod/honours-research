@@ -25,14 +25,20 @@ class GeneticAlgorithmBot:
         board = chess.Board()
         score = 0
         for _ in range(10):  # Play up to 10 random moves to evaluate the position
-            move = random.choice(list(board.legal_moves))
+            legal_moves = list(board.legal_moves)
+            
+            # Check if there are legal moves available
+            if not legal_moves:
+                break  # Exit if the game is in a terminal state
+            
+            move = random.choice(legal_moves)
             board.push(move)
             result = self.engine.analyse(board, chess.engine.Limit(time=0.1))
             eval_score = result["score"].relative.score()
 
-            # Check for None value and handle it
+            # Handle None scores
             if eval_score is None:
-                eval_score = 0  # Treat it as neutral
+                eval_score = 0
 
             score += eval_score if board.turn else -eval_score
         return score
