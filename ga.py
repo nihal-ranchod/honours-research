@@ -103,4 +103,5 @@ class GeneticAlgorithmBot:
         return best_move
 
     def __del__(self):
-        self.engine.close()
+        if hasattr(self, 'engine'):
+            self.engine.quit()
