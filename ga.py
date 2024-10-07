@@ -1,107 +1,123 @@
-import numpy as np
 import random
-import pickle
-import matplotlib.pyplot as plt
-from tqdm import tqdm
 import chess
 import chess.engine
+import numpy as np
+import matplotlib.pyplot as plt
+import pickle
 
 class GeneticAlgorithmBot:
-    def __init__(self, population_size=100, mutation_rate=0.1, crossover_rate=0.7, num_generations=20, engine_path="stockfish/stockfish"):
+    def __init__(self, population_size=50, generations=500, mutation_rate=0.1, crossover_rate=0.7):
         self.population_size = population_size
+        self.generations = generations
         self.mutation_rate = mutation_rate
         self.crossover_rate = crossover_rate
-        self.num_generations = num_generations
-        self.engine = chess.engine.SimpleEngine.popen_uci(engine_path)
-        self.population = self._initialize_population()
-        self.fitness_history = []
+        self.population = []
+        self.fitness_scores = []
+        
+        # Initialize Stockfish engine
+        self.engine = chess.engine.SimpleEngine.popen_uci("stockfish/stockfish")
+        self.learning_progress = []
 
-    def _initialize_population(self):
-        # Initialize population with random weights
-        return [np.random.rand(64) for _ in range(self.population_size)]
+    def evaluate_board(self, board):
+        # Use Stockfish to evaluate the board state
+        result = self.engine.analyse(board, chess.engine.Limit(time=0.1))
+        return result["score"].relative.score() or 0  # Return 0 for None values
 
-    def _evaluate_individual(self, individual):
-        # Evaluation logic using Stockfish
+    def initialize_population(self):
+        for _ in range(self.population_size):
+            board = chess.Board()
+            moves = []
+            for _ in range(5):  # Generate a sequence of 5 legal moves
+                legal_moves = list(board.legal_moves)
+                if not legal_moves:
+                    break
+                move = random.choice(legal_moves)
+                moves.append(move)
+                board.push(move)
+            self.population.append(moves)
+
+    def fitness(self, individual):
         board = chess.Board()
-        score = 0
-        for _ in range(10):  # Play up to 10 random moves to evaluate the position
-            legal_moves = list(board.legal_moves)
-            
-            # Check if there are legal moves available
-            if not legal_moves:
-                break  # Exit if the game is in a terminal state
-            
-            move = random.choice(legal_moves)
-            board.push(move)
-            result = self.engine.analyse(board, chess.engine.Limit(time=0.1))
-            eval_score = result["score"].relative.score()
+        for move in individual:
+            if board.is_legal(move):
+                board.push(move)
+            else:
+                return 0  # Return 0 instead of a large negative value
+        return self.evaluate_board(board)
 
-            # Handle None scores
-            if eval_score is None:
-                eval_score = 0
+    def selection(self):
+        # Weighted random selection based on fitness
+        weights = [self.fitness(individual) for individual in self.population]
+        selected = random.choices(self.population, weights=weights, k=2)
+        return selected
 
-            score += eval_score if board.turn else -eval_score
-        return score
+    def crossover(self, parent1, parent2):
+        point = random.randint(1, len(parent1) - 1)
+        child1 = parent1[:point] + parent2[point:]
+        child2 = parent2[:point] + parent1[point:]
+        return child1, child2
 
-    def _selection(self):
-        # Tournament selection
-        tournament = random.sample(self.population, k=4)
-        tournament.sort(key=self._evaluate_individual, reverse=True)
-        return tournament[0], tournament[1]
-
-    def _crossover(self, parent1, parent2):
-        # Single point crossover
-        crossover_point = np.random.randint(64)
-        child = np.concatenate((parent1[:crossover_point], parent2[crossover_point:]))
-        return child
-
-    def _mutate(self, individual):
-        # Mutate individual with some probability
-        for i in range(len(individual)):
-            if random.random() < self.mutation_rate:
-                individual[i] = np.random.rand()
+    def mutate(self, individual):
+        if random.random() < self.mutation_rate:
+            index = random.randint(0, len(individual) - 1)
+            legal_moves = list(chess.Board().legal_moves)
+            individual[index] = random.choice(legal_moves)
         return individual
 
-    def _next_generation(self):
-        new_population = []
-        for _ in range(self.population_size // 2):
-            parent1, parent2 = self._selection()
-            child1, child2 = self._crossover(parent1, parent2), self._crossover(parent2, parent1)
-            new_population.append(self._mutate(child1))
-            new_population.append(self._mutate(child2))
-        self.population = new_population
-
-    def train(self, num_games=100):
-        for generation in tqdm(range(self.num_generations), desc="Training Progress"):
-            fitness_scores = [self._evaluate_individual(individual) for individual in self.population]
-            self.fitness_history.append(np.mean(fitness_scores))
-            print(f"Generation {generation+1} - Average Fitness: {np.mean(fitness_scores)}")
-            self._next_generation()
-
-    def save_weights(self, file_path):
-        with open(file_path, 'wb') as f:
-            pickle.dump(self.population, f)
-        print("Model weights saved successfully.")
-
-    def load_weights(self, file_path):
-        with open(file_path, 'rb') as f:
-            self.population = pickle.load(f)
-        print("Model weights loaded successfully.")
+    def train(self):
+        self.initialize_population()
+        
+        for generation in range(self.generations):
+            new_population = []
+            self.fitness_scores = [self.fitness(individual) for individual in self.population]
+            self.learning_progress.append(np.mean(self.fitness_scores))
+            
+            while len(new_population) < self.population_size:
+                parent1, parent2 = self.selection()
+                if random.random() < self.crossover_rate:
+                    child1, child2 = self.crossover(parent1, parent2)
+                else:
+                    child1, child2 = parent1, parent2
+                new_population.extend([self.mutate(child1), self.mutate(child2)])
+            
+            self.population = new_population
+            print(f"Generation {generation} - Avg Fitness: {self.learning_progress[-1]}")
+        
+        self.save_model("genetic_algorithm_model.pkl")
+        self.plot_learning_progress()
 
     def plot_learning_progress(self):
-        plt.plot(self.fitness_history)
-        plt.xlabel("Generation")
-        plt.ylabel("Average Fitness")
-        plt.title("GA Bot Learning Progress")
+        plt.plot(self.learning_progress)
+        plt.xlabel('Generation')
+        plt.ylabel('Average Fitness Score')
+        plt.title('Genetic Algorithm Learning Progress')
+        plt.savefig('learning_progress.png')
         plt.show()
-        
-    def step(self, state):
-        # Select best move based on evaluation from population individuals
-        moves = list(state.legal_moves)
-        move_scores = [self._evaluate_individual(np.random.choice(self.population)) for move in moves]
-        best_move = moves[np.argmax(move_scores)]
+
+    def save_model(self, filename):
+        with open(filename, 'wb') as f:
+            pickle.dump(self.population, f)
+    
+    def load_model(self, filename):
+        with open(filename, 'rb') as f:
+            self.population = pickle.load(f)
+
+    def make_move(self, board):
+        # Find the best move according to the bot
+        best_move = None
+        best_fitness = -float("inf")
+        for move in self.population[0]:  # Evaluate moves in the best individual
+            board.push(move)
+            fitness = self.evaluate_board(board)
+            if fitness > best_fitness:
+                best_fitness = fitness
+                best_move = move
+            board.pop()
         return best_move
 
-    def __del__(self):
-        if hasattr(self, 'engine'):
-            self.engine.quit()
+# Usage example
+bot = GeneticAlgorithmBot()
+bot.train()
+# To load a saved model and play a move
+# bot.load_model("genetic_algorithm_model.pkl")
+# move = bot.make_move(board)
