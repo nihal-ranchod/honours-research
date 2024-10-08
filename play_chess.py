@@ -15,8 +15,10 @@ from absl import app
 from absl import flags
 import numpy as np
 import os
+import torch
+import torch.nn as nn
 
-# from open_spiel.python.algorithms import mcts
+#from open_spiel.python.algorithms import mcts
 # from open_spiel.python.algorithms.alpha_zero import evaluator as az_evaluator
 # from open_spiel.python.algorithms.alpha_zero import model as az_model
 from open_spiel.python.bots import human
@@ -26,6 +28,7 @@ import pyspiel
 # Add created Agents
 import mcts_algorithm as mcts
 from ga_algorithm import GeneticAlgorithmBot
+from nfsp_test import NFSPBot
 
 import matplotlib.pyplot as plt
 
@@ -133,6 +136,16 @@ def _init_bot(bot_type, game, player_id):
         ga_bot.save_weights(FLAGS.ga_weights_file)
         plt.show() 
     return ga_bot
+  if bot_type == "nfsp":
+    nfsp_bot = NFSPBot(game=game, player_id=player_id)
+    model_path = "nfsp_model.pth" 
+    if os.path.exists(model_path):
+        nfsp_bot.model.load_state_dict(torch.load(model_path))
+        nfsp_bot.model.eval()  # Set the model to evaluation mode
+        print(f"Loaded NFSP model from {model_path}")
+    else:
+        print(f"No pre-trained model found at {model_path}. Using untrained model.")
+    return nfsp_bot
   if bot_type == "random":
     return uniform_random.UniformRandomBot(player_id, rng)
   if bot_type == "human":
