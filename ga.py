@@ -161,7 +161,7 @@ class GeneticAlgorithmBot:
         plt.grid()
         plt.legend()
         plt.savefig('learning_progress.png')  # Save the plot
-        plt.show()
+        plt.close()
 
     def train(self, save_interval=50):
         for generation in range(self.generations):
