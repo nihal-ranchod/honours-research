@@ -98,7 +98,7 @@ class NFSPBot:
         plt.ylabel('Loss')
         plt.title('NFSP Learning Progress')
         plt.savefig('nfsp_learning_progress.png')
-        plt.show()
+        plt.close()
 
     def step(self, state):
         action = self.select_action(state)
