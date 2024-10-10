@@ -1,0 +1,2 @@
+/home-mscluster/nranchod/miniconda3/envs/research/lib/python3.10/site-packages/torch/autograd/graph.py:769: UserWarning: CUDA initialization: Unexpected error from cudaGetDeviceCount(). Did you run some cuda functions before calling NumCudaDevices() that might have already set an error? Error 101: invalid device ordinal (Triggered internally at ../c10/cuda/CUDAFunctions.cpp:108.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
