@@ -24,17 +24,21 @@ class NFSPBot:
         self.replay_buffer = deque(maxlen=10000)
         self.target_model = self.build_model()
         self.target_model.load_state_dict(self.model.state_dict())
+        self.batch_size = 64  # New batch size for training
+        self.gamma = 0.99  # Discount factor for future rewards
+        self.total_reward = 0  # Initialize total reward tracker
+        self.reward_history = []  # List to store total rewards for each game
 
     def build_model(self):
-        # A simple feedforward neural network for NFSP
+        # Increased model complexity
         input_size = self.game.observation_tensor_size()
         output_size = self.game.num_distinct_actions()
         model = nn.Sequential(
-            nn.Linear(input_size, 256),
+            nn.Linear(input_size, 512),  # Increased size
             nn.ReLU(),
-            nn.Linear(256, 256),
+            nn.Linear(512, 512),  # Increased size
             nn.ReLU(),
-            nn.Linear(256, output_size)
+            nn.Linear(512, output_size)
         )
         return model
 
@@ -61,12 +65,26 @@ class NFSPBot:
         self.training_data.append((state.observation_tensor(player_id), action))
         self.replay_buffer.append((state.observation_tensor(player_id), action))
 
+        # Reward shaping (example)
+        if state.is_terminal():
+            reward = 1 if state.current_player() == self.player_id else -1
+            self.replay_buffer[-1] = (self.replay_buffer[-1][0], reward)  # Update last action with reward
+            self.total_reward += reward  # Accumulate total reward
+
+    def reset_total_reward(self):
+        self.total_reward = 0  # Reset total reward for a new game session
+
+    def record_reward(self):
+        self.reward_history.append(self.total_reward)  # Record total reward after each game
+
     def train(self):
         # Train the model using collected training data
-        if len(self.training_data) == 0:
+        if len(self.replay_buffer) < self.batch_size:
             return
 
-        states, actions = zip(*self.training_data)
+        # Sample a batch from the replay buffer
+        batch = random.sample(self.replay_buffer, self.batch_size)
+        states, actions = zip(*batch)
         states_tensor = torch.FloatTensor(states)
         actions_tensor = torch.LongTensor(actions)
 
@@ -122,10 +140,13 @@ if __name__ == "__main__":
     ) 
     #random_bot = uniform_random.UniformRandomBot(1, np.random.RandomState())  # Create random bot for player 1
 
-    num_games = 100  # Number of games to train the NFSP bot
+    num_games = 300  # Number of games to train the NFSP bot
+    max_moves = 100  # Set a maximum number of moves per game
     for _ in range(num_games):
+        nfsp_bot.reset_total_reward()  # Reset total reward at the start of each game
         state = game.new_initial_state()  # Start a new game
-        while not state.is_terminal():
+        move_count = 0  # Initialize move counter
+        while not state.is_terminal() and move_count < max_moves:
             if state.current_player() == nfsp_bot.player_id:
                 action = nfsp_bot.step(state)  # NFSP bot's action
             else:
@@ -133,8 +154,19 @@ if __name__ == "__main__":
 
             nfsp_bot.inform_action(state, state.current_player(), action)  # Inform NFSP bot of the action taken
             state.apply_action(action)  # Apply the action to the game state
+            move_count += 1  # Increment move counter
 
         nfsp_bot.train()  # Train the NFSP bot after each game
+        nfsp_bot.record_reward()  # Record total reward after each game
+        print(f"Total Reward after game: {nfsp_bot.total_reward}")  # Print total reward after each game
 
     nfsp_bot.save_model()  # Save the model after training
     nfsp_bot.plot_learning_progress()  # Plot learning progress
+
+    # Plot total rewards over games
+    plt.plot(nfsp_bot.reward_history)
+    plt.xlabel('Game Number')
+    plt.ylabel('Total Reward')
+    plt.title('Total Reward Over Games')
+    plt.savefig('nfsp_total_reward_progress.png') 
+    plt.close()
