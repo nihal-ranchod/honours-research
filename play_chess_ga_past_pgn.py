@@ -90,7 +90,7 @@ def _init_bot(bot_type, game, player_id):
     if FLAGS.train_ga:
         # Load training data from PGN files
         with open(PGN_FILE_PATH, 'r') as f:
-            training_data = list(chess.pgn.read_game(f) for _ in range(100))  # Load some data
+            training_data = list(chess.pgn.read_game(f) for _ in range(200))  # Load some data
         ga_bot.train(training_data)
         ga_bot.plot_learning_progress()
         ga_bot.save_model(FLAGS.ga_weights_file)

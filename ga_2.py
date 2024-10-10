@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import chess.pgn
 
 class GeneticAlgorithmBot:
-    def __init__(self, population_size=20, mutation_rate=0.1, crossover_rate=0.7):
+    def __init__(self, population_size=50, mutation_rate=0.1, crossover_rate=0.7):
         self.population_size = population_size
         self.mutation_rate = mutation_rate
         self.crossover_rate = crossover_rate
