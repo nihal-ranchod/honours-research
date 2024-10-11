@@ -8,4 +8,4 @@
 source ~/.bashrc
 conda activate research
 
-python ga.py
+python ga_2.py

@@ -1,138 +1,132 @@
+import chess.pgn
 import numpy as np
 import random
-import pickle
 import matplotlib.pyplot as plt
-import chess.pgn
+import pickle
+import pyspiel
 
-class GeneticAlgorithmBot:
-    def __init__(self, population_size=50, mutation_rate=0.1, crossover_rate=0.7):
+class GeneticAlgorithmBot(pyspiel.Bot):
+    def __init__(self, population_size=100, generations=50, mutation_rate=0.01, elitism_rate=0.1, tournament_size=5):
+        super().__init__()
         self.population_size = population_size
+        self.generations = generations
         self.mutation_rate = mutation_rate
-        self.crossover_rate = crossover_rate
-        self.population = []
-        self.rewards = []
-        self.generation_rewards = []
+        self.elitism_rate = elitism_rate
+        self.tournament_size = tournament_size
+        self.population = self._initialize_population()
+        self.fitness_history = []
 
-    def initialize_population(self):
-        """Initialize the population with random parameters."""
-        self.population = [self._random_individual() for _ in range(self.population_size)]
+    def _initialize_population(self):
+        # Initialize a population of random strategies
+        return [self._random_strategy() for _ in range(self.population_size)]
 
-    def _random_individual(self):
-        """Create a random individual with parameters suited for chess moves."""
-        return {"weights": np.random.rand(64)}
+    def _random_strategy(self):
+        # Create a random strategy (e.g., random weights for evaluation function)
+        return np.random.rand(64)
 
-    def evaluate(self, individual, training_data):
-        """Evaluate the individual's performance on training data."""
-        total_reward = 0
-        for puzzle in training_data:
-            board = puzzle.board()
-            node = puzzle
+    def _evaluate_fitness(self, strategy, pgn_data):
+        # Evaluate the fitness of a strategy based on PGN data
+        fitness = 0
+        for game in pgn_data:
+            board = chess.Board()
+            for move in game.mainline_moves():
+                board.push(move)
+                if board.is_game_over():
+                    result = board.result()
+                    if result == "1-0":
+                        fitness += 1
+                    elif result == "0-1":
+                        fitness -= 1
+        return fitness
 
-            # Initialize reward components
-            move_count = 0
-            won_game = False
+    def _select_parents(self):
+        # Select parents using tournament selection
+        parents = []
+        for _ in range(self.population_size):
+            tournament = random.sample(self.population, self.tournament_size)
+            best_parent = max(tournament, key=lambda s: self._evaluate_fitness(s, self.pgn_data))
+            parents.append(best_parent)
+        return parents
 
-            while node.variations:
-                move_count += 1
-                next_node = node.variation(0)
-                board.push(next_node.move)
-                
-                # Evaluate based on individual's weights
-                reward = np.sum([individual['weights'][square] for square in board.piece_map().keys()])
+    def _crossover(self, parent1, parent2):
+        # Apply crossover to create a new strategy
+        crossover_point = random.randint(0, len(parent1))
+        child = np.concatenate((parent1[:crossover_point], parent2[crossover_point:]))
+        return child
 
-                # Reward for winning/losing state
-                if board.is_checkmate():
-                    won_game = True
-                    reward += 100  # Example reward for checkmate
-                elif board.is_stalemate():
-                    reward -= 50  # Penalty for stalemate
-                elif board.is_insufficient_material() or board.is_seventyfive_moves():
-                    reward -= 50  # Penalty for other types of draws
+    def _mutate(self, strategy):
+        # Apply mutation to a strategy
+        for i in range(len(strategy)):
+            if random.random() < self.mutation_rate:
+                strategy[i] = np.random.rand()
+        return strategy
 
-                total_reward += reward
-                node = next_node
+    def train(self, pgn_file):
+        # Load PGN data
+        self.pgn_data = []
+        with open(pgn_file) as f:
+            while True:
+                game = chess.pgn.read_game(f)
+                if game is None:
+                    break
+                self.pgn_data.append(game)
 
-            # Encourage winning in fewer moves
-            if won_game:
-                total_reward += 1000 / (move_count + 1)
+        # Train the population
+        for generation in range(self.generations):
+            new_population = []
+            parents = self._select_parents()
 
-        return total_reward
+            # Elitism: carry over the best strategies to the next generation
+            num_elites = int(self.elitism_rate * self.population_size)
+            elites = sorted(self.population, key=lambda s: self._evaluate_fitness(s, self.pgn_data), reverse=True)[:num_elites]
+            new_population.extend(elites)
 
-    def select_parents(self):
-        """Select individuals to reproduce based on their fitness."""
-        sorted_population = sorted(self.population, key=lambda x: x['reward'], reverse=True)
-        return sorted_population[:self.population_size // 2]
-
-    def crossover(self, parent1, parent2):
-        """Perform crossover between two parents."""
-        if random.random() < self.crossover_rate:
-            cross_point = random.randint(1, len(parent1['weights']) - 1)
-            child1_weights = np.concatenate((parent1['weights'][:cross_point], parent2['weights'][cross_point:]))
-            child2_weights = np.concatenate((parent2['weights'][:cross_point], parent1['weights'][cross_point:]))
-            return [{'weights': child1_weights}, {'weights': child2_weights}]
-        return [parent1, parent2]
-
-    def mutate(self, individual):
-        """Mutate the individual by changing some of its weights."""
-        if random.random() < self.mutation_rate:
-            index = random.randint(0, len(individual['weights']) - 1)
-            individual['weights'][index] = np.random.rand()
-        return individual
-
-    def train(self, training_data):
-        """Train the bot using genetic algorithm on the provided training data."""
-        self.initialize_population()
-        
-        for generation in range(100):  # Define the number of generations
-            print(f"Generation {generation + 1}")
-            
-            # Evaluate individuals and assign rewards
-            for individual in self.population:
-                # Initialize reward to ensure the key exists
-                individual['reward'] = 0
-                try:
-                    individual['reward'] = self.evaluate(individual, training_data)
-                except Exception as e:
-                    print(f"Error evaluating individual: {e}")
-                    individual['reward'] = 0  # Fallback in case of evaluation error
-            
-            parents = self.select_parents()
-            self.population = []
-            
-            # Generate new population
-            while len(self.population) < self.population_size:
+            # Create new candidates through crossover and mutation
+            while len(new_population) < self.population_size:
                 parent1, parent2 = random.sample(parents, 2)
-                children = self.crossover(parent1, parent2)
-                self.population.extend(children)
-            
-            # Mutate the new population
-            self.population = [self.mutate(ind) for ind in self.population]
-            
-            # Compute the average reward for the generation
-            average_reward = np.mean([ind['reward'] for ind in self.population if 'reward' in ind])
-            self.generation_rewards.append(average_reward)
-            print(f"Average reward: {average_reward}")
+                child = self._mutate(self._crossover(parent1, parent2))
+                new_population.append(child)
 
-    def plot_learning_progress(self):
-        plt.plot(self.generation_rewards)
+            self.population = new_population
+
+            # Track fitness
+            best_fitness = max([self._evaluate_fitness(strategy, self.pgn_data) for strategy in self.population])
+            self.fitness_history.append(best_fitness)
+            print(f"Generation {generation}: Best Fitness = {best_fitness}")
+
+        # Plot learning progress
+        plt.plot(self.fitness_history)
         plt.xlabel('Generation')
-        plt.ylabel('Average Reward')
-        plt.title('Learning Progress of Genetic Algorithm Bot on Standard PGN Data')
-        plt.show()
+        plt.ylabel('Best Fitness')
+        plt.title('Genetic Algorithm Learning Progress')
+        plt.savefig('ga_learning_progress.png')
 
     def save_model(self, filename):
-        """Save the trained model to a file."""
         with open(filename, 'wb') as f:
             pickle.dump(self.population, f)
 
     def load_model(self, filename):
-        """Load a model from a file."""
         with open(filename, 'rb') as f:
             self.population = pickle.load(f)
 
     def step(self, state):
-        """Decide the next move based on the current population leader."""
-        best_individual = max(self.population, key=lambda x: x['reward'])
+        # Select the best strategy and use it to choose a move
+        best_strategy = max(self.population, key=lambda s: self._evaluate_fitness(s, self.pgn_data))
         legal_moves = state.legal_actions()
-        # Select a move based on weights - this is a placeholder and should be customized
-        return random.choice(legal_moves)
+        best_move = max(legal_moves, key=lambda move: self._evaluate_move(state, move, best_strategy))
+        return best_move
+
+    def _evaluate_move(self, state, move, strategy):
+        # Evaluate a move based on the strategy
+        board = chess.Board(state.fen())
+        board.push(move)
+        return sum(strategy[board.piece_at(i).square] for i in range(64) if board.piece_at(i))
+
+    def inform_action(self, state, player_id, action):
+        pass
+
+if __name__ == "__main__":
+    pgn_file = "PGN_Data/lichess_db_standard_rated_2013-01.pgn"
+    ga_bot = GeneticAlgorithmBot()
+    ga_bot.train(pgn_file)
+    ga_bot.save_model("ga_chess_bot.pkl")
