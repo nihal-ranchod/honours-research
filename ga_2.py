@@ -99,7 +99,7 @@ class GeneticAlgorithmBot(pyspiel.Bot):
         plt.xlabel('Generation')
         plt.ylabel('Best Fitness')
         plt.title('Genetic Algorithm Learning Progress')
-        plt.savefig('ga_learning_progress.png')
+        plt.savefig('ga_learning_progress_standard.png')
 
     def save_model(self, filename):
         with open(filename, 'wb') as f:
@@ -129,4 +129,4 @@ if __name__ == "__main__":
     pgn_file = "PGN_Data/lichess_db_standard_rated_2013-01.pgn"
     ga_bot = GeneticAlgorithmBot()
     ga_bot.train(pgn_file)
-    ga_bot.save_model("ga_chess_bot.pkl")
+    ga_bot.save_model("ga_chess_bot_standard.pkl")
