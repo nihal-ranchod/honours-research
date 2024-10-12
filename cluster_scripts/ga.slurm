@@ -8,4 +8,4 @@
 source ~/.bashrc
 conda activate research
 
-python play_chess.py --train_ga
+python ga_2.py
