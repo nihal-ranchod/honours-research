@@ -140,7 +140,7 @@ if __name__ == "__main__":
     ) 
     #random_bot = uniform_random.UniformRandomBot(1, np.random.RandomState())  # Create random bot for player 1
 
-    num_games = 300  # Number of games to train the NFSP bot
+    num_games = 100  # Number of games to train the NFSP bot
     max_moves = 100  # Set a maximum number of moves per game
     for _ in range(num_games):
         nfsp_bot.reset_total_reward()  # Reset total reward at the start of each game
