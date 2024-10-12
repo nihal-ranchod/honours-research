@@ -27,8 +27,6 @@ import pyspiel
 
 # Add created Agents
 import mcts_algorithm as mcts
-from ga import GeneticAlgorithmBot
-from nfsp_test import NFSPBot
 
 import matplotlib.pyplot as plt
 
@@ -71,13 +69,6 @@ flags.DEFINE_bool("solve", True, "Whether to use MCTS-Solver.")
 flags.DEFINE_bool("quiet", False, "Don't show the moves as they're played.")
 flags.DEFINE_bool("verbose", False, "Show the MCTS stats of possible moves.")
 
-# Genetic Algorithm flags
-flags.DEFINE_bool("train_ga", False, "Whether to train a new GA model or load a pre-trained one.")
-flags.DEFINE_string("ga_weights_file", "ga_chess_bot.pkl", "File to save/load GA model.")
-
-# Add a constant for the PGN file path
-PGN_FILE_PATH = os.path.join("PGN_Data", "lichess_db_standard_rated_2013-01.pgn")
-
 FLAGS = flags.FLAGS
 
 # print messages if the quiet flag is not set
@@ -88,10 +79,6 @@ def _opt_print(*args, **kwargs):
 def _init_bot(bot_type, game, player_id):
   """Initializes a bot by type."""
   rng = np.random.RandomState(FLAGS.seed)
-  if bot_type == "ga":
-    ga_bot = GeneticAlgorithmBot()
-    ga_bot.load_model(FLAGS.ga_weights_file)
-    return ga_bot
   if bot_type == "mcts":
     evaluator = mcts.RandomRolloutEvaluator(FLAGS.rollout_count, rng)
     return mcts.MCTSBot(
@@ -124,31 +111,6 @@ def _init_bot(bot_type, game, player_id):
         random_state=rng,
         solve=FLAGS.solve,
         verbose=FLAGS.verbose)
-  if bot_type == "ga":
-    ga_bot = GeneticAlgorithmBot()
-    if FLAGS.train_ga:
-      ga_bot.train(num_games=200)  # Increased number of games for better evaluation
-      ga_bot.save_weights(FLAGS.ga_weights_file)
-      plt.show()  # This will display the training progress plot
-    else:
-      try:
-        ga_bot.load_weights(FLAGS.ga_weights_file)
-      except FileNotFoundError:
-        print(f"Pre-trained weights not found. Training new model...")
-        ga_bot.train(num_games=200)
-        ga_bot.save_weights(FLAGS.ga_weights_file)
-        plt.show() 
-    return ga_bot
-  if bot_type == "nfsp":
-    nfsp_bot = NFSPBot(game=game, player_id=player_id)
-    model_path = "nfsp_model.pth" 
-    if os.path.exists(model_path):
-        nfsp_bot.model.load_state_dict(torch.load(model_path))
-        nfsp_bot.model.eval()  # Set the model to evaluation mode
-        print(f"Loaded NFSP model from {model_path}")
-    else:
-        print(f"No pre-trained model found at {model_path}. Using untrained model.")
-    return nfsp_bot
   if bot_type == "random":
     return uniform_random.UniformRandomBot(player_id, rng)
   if bot_type == "human":
