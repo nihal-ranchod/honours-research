@@ -61,15 +61,17 @@ class GeneticAlgorithmBot(pyspiel.Bot):
                 strategy[i] = np.random.rand()
         return strategy
 
-    def train(self, pgn_file):
+    def train(self, pgn_file, max_games=None):
         # Load PGN data
         self.pgn_data = []
         with open(pgn_file) as f:
+            game_count = 0
             while True:
                 game = chess.pgn.read_game(f)
-                if game is None:
+                if game is None or (max_games is not None and game_count >= max_games):
                     break
                 self.pgn_data.append(game)
+                game_count += 1
 
         # Train the population
         for generation in range(self.generations):
@@ -128,5 +130,5 @@ class GeneticAlgorithmBot(pyspiel.Bot):
 if __name__ == "__main__":
     pgn_file = "PGN_Data/lichess_db_standard_rated_2013-01.pgn"
     ga_bot = GeneticAlgorithmBot()
-    ga_bot.train(pgn_file)
+    ga_bot.train(pgn_file, max_games=100)
     ga_bot.save_model("ga_chess_bot_standard.pkl")

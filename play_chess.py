@@ -87,12 +87,7 @@ def _init_bot(bot_type, game, player_id):
   rng = np.random.RandomState(FLAGS.seed)
   if bot_type == "ga":
     ga_bot = GeneticAlgorithmBot()
-    if FLAGS.train_ga:
-        ga_bot.train()
-        ga_bot.plot_learning_progress()
-        ga_bot.save_model(FLAGS.ga_weights_file)
-    else:
-        ga_bot.load_model(FLAGS.ga_weights_file)
+    ga_bot.load_model(FLAGS.ga_weights_file)
     return ga_bot
   if bot_type == "mcts":
     evaluator = mcts.RandomRolloutEvaluator(FLAGS.rollout_count, rng)
