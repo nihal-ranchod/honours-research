@@ -17,6 +17,7 @@ import numpy as np
 import os
 import torch
 import torch.nn as nn
+import pickle
 
 #from open_spiel.python.algorithms import mcts
 # from open_spiel.python.algorithms.alpha_zero import evaluator as az_evaluator
@@ -27,6 +28,7 @@ import pyspiel
 
 # Add created Agents
 import mcts_algorithm as mcts
+from genetic_algorithm import GeneticChessBot, LoadedChessModel
 
 import matplotlib.pyplot as plt
 
@@ -49,8 +51,11 @@ _KNOWN_PLAYERS = [
     # A Neural Fictitious Self-Play agent
     "nfsp",
 
-    # A Genetic Algorithm agent
-    "ga"
+    # A Genetic Algorithm agent trained on standard PGN data
+    "ga",
+
+    # A Genetic Algorithm agent trained on chess puzzle data
+    "ga_puzzle"
 ]
 
 flags.DEFINE_string("game", "chess", "Name of the game.")
@@ -111,6 +116,10 @@ def _init_bot(bot_type, game, player_id):
         random_state=rng,
         solve=FLAGS.solve,
         verbose=FLAGS.verbose)
+  if bot_type == "ga":
+    return LoadedChessModel("best_genome.pkl")
+  if bot_type == "ga_puzzle":
+    return LoadedChessModel("best_genome_puzzle.pkl")
   if bot_type == "random":
     return uniform_random.UniformRandomBot(player_id, rng)
   if bot_type == "human":
