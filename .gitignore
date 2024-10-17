@@ -1,5 +1,4 @@
 *.json
 *.csv
-*.rtbw
-*.rtbz
-*.md5
+*.pyc
+
