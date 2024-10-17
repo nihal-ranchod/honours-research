@@ -9,6 +9,7 @@ import pickle
 import io
 import random
 from collections import defaultdict
+import csv
 
 class ChessNet(nn.Module):
     def __init__(self):
@@ -272,12 +273,21 @@ class GeneticChessBot:
             with open(filepath, 'wb') as f:
                 pickle.dump(self.best_genome, f)
 
-    def plot_learning_progress(self):
+    def plot_learning_progress(self, title):
         """Plot the fitness history"""
         plt.figure(figsize=(10, 6))
         plt.plot(self.fitness_history)
-        plt.title('Genetic Algorithm Learning Progress')
+        plt.title('Genetic Algorithm Learning Progress for ' + title)
         plt.xlabel('Generation')
         plt.ylabel('Best Fitness')
         plt.grid(True)
-        plt.show()
+        plt.savefig(f'learning_progress_for_{title}.png')
+        plt.close()
+
+    def save_fitness_history_to_csv(self, filepath: str):
+        """Save the fitness history to a CSV file"""
+        with open(filepath, 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(['Generation', 'Best Fitness'])
+            for generation, fitness in enumerate(self.fitness_history):
+                writer.writerow([generation + 1, fitness])

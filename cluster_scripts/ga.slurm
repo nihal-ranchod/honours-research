@@ -8,4 +8,4 @@
 source ~/.bashrc
 conda activate research
 
-python ga_2.py
+python genetic_algorithm_train.py
