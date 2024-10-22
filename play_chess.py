@@ -27,6 +27,7 @@ import pyspiel
 
 # Add created Agents
 import mcts_algorithm as mcts
+from baseline import StockfishBot
 
 import matplotlib.pyplot as plt
 
@@ -50,7 +51,10 @@ _KNOWN_PLAYERS = [
     "nfsp",
 
     # A Genetic Algorithm agent
-    "ga"
+    "ga",
+
+    # Baseline Stockfish agent
+    "stockfish"
 ]
 
 flags.DEFINE_string("game", "chess", "Name of the game.")
@@ -68,6 +72,7 @@ flags.DEFINE_bool("random_first", False, "Play the first move randomly.")
 flags.DEFINE_bool("solve", True, "Whether to use MCTS-Solver.")
 flags.DEFINE_bool("quiet", False, "Don't show the moves as they're played.")
 flags.DEFINE_bool("verbose", False, "Show the MCTS stats of possible moves.")
+flags.DEFINE_string("stockfish_path", "stockfish/stockfish", "Path to Stockfish engine executable.")
 
 FLAGS = flags.FLAGS
 
@@ -111,6 +116,8 @@ def _init_bot(bot_type, game, player_id):
         random_state=rng,
         solve=FLAGS.solve,
         verbose=FLAGS.verbose)
+  if bot_type == "stockfish":
+    return StockfishBot(player_id, FLAGS.stockfish_path)
   if bot_type == "random":
     return uniform_random.UniformRandomBot(player_id, rng)
   if bot_type == "human":
