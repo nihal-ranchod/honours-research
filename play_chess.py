@@ -17,6 +17,7 @@ import numpy as np
 import os
 import torch
 import torch.nn as nn
+import matplotlib.pyplot as plt
 
 #from open_spiel.python.algorithms import mcts
 # from open_spiel.python.algorithms.alpha_zero import evaluator as az_evaluator
@@ -27,8 +28,7 @@ import pyspiel
 
 # Add created Agents
 import mcts_algorithm as mcts
-
-import matplotlib.pyplot as plt
+from nfsp_algorithm import NFSPBot
 
 _KNOWN_PLAYERS = [
     # A vanilla Monte Carlo Tree Search agent.
@@ -111,6 +111,8 @@ def _init_bot(bot_type, game, player_id):
         random_state=rng,
         solve=FLAGS.solve,
         verbose=FLAGS.verbose)
+  if bot_type == "nfsp":
+    return NFSPBot(game, player_id, "nfsp_chess_model.pth")
   if bot_type == "random":
     return uniform_random.UniformRandomBot(player_id, rng)
   if bot_type == "human":
