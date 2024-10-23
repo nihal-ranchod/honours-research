@@ -246,6 +246,6 @@ def create_nfsp_bot(game, player_id):
 if __name__ == '__main__':
     game = pyspiel.load_game("chess")
     nfsp_agent = NFSPChessAgent(game, player_id=0)
-    nfsp_agent.train(num_episodes=1000)
+    nfsp_agent.train(num_episodes=500)
     nfsp_agent.save_model("nfsp_chess_model.pt")
     nfsp_agent.plot_metrics()
