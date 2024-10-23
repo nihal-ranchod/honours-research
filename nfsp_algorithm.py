@@ -1,17 +1,31 @@
+import os
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import numpy as np
-import chess
-import pyspiel
 from collections import deque, namedtuple
 import random
 import matplotlib.pyplot as plt
 from tqdm import tqdm
-import chess.pgn
-import io
+import pyspiel
 
 Experience = namedtuple('Experience', ['state', 'action', 'reward', 'next_state', 'done'])
+
+class ChessNet(nn.Module):
+    def __init__(self, input_size, hidden_size, output_size):
+        super(ChessNet, self).__init__()
+        self.network = nn.Sequential(
+            nn.Linear(input_size, hidden_size),
+            nn.ReLU(),
+            nn.Linear(hidden_size, hidden_size),
+            nn.ReLU(),
+            nn.Linear(hidden_size, hidden_size),
+            nn.ReLU(),
+            nn.Linear(hidden_size, output_size)
+        )
+        
+    def forward(self, x):
+        return self.network(x)
 
 class ReplayBuffer:
     def __init__(self, capacity):
@@ -26,266 +40,212 @@ class ReplayBuffer:
     def __len__(self):
         return len(self.buffer)
 
-class ChessNetwork(nn.Module):
-    def __init__(self, input_size=773, hidden_size=512, output_size=4096):  # Increased output size
-        super(ChessNetwork, self).__init__()
-        self.network = nn.Sequential(
-            nn.Linear(input_size, hidden_size),
-            nn.ReLU(),
-            nn.Linear(hidden_size, hidden_size),
-            nn.ReLU(),
-            nn.Linear(hidden_size, hidden_size),
-            nn.ReLU(),
-            nn.Linear(hidden_size, output_size)
-        )
+class NFSPChessAgent:
+    def __init__(self, game, player_id, hidden_size=512, learning_rate=0.001,
+                 buffer_size=100000, batch_size=128, gamma=0.99, 
+                 epsilon_start=1.0, epsilon_end=0.1, epsilon_decay=0.995):
         
-    def forward(self, x):
-        return self.network(x)
-
-class NFSPChessBot:
-    def __init__(self, game, player_id, learning_rate=0.001, buffer_size=100000, 
-                 batch_size=32, eta=0.1, model_path=None):
         self.game = game
         self.player_id = player_id
-        self.learning_rate = learning_rate
         self.batch_size = batch_size
-        self.eta = eta
+        self.gamma = gamma
+        self.epsilon = epsilon_start
+        self.epsilon_end = epsilon_end
+        self.epsilon_decay = epsilon_decay
         
-        self.move_to_index = {}
-        self.index_to_move = {}
-        self.create_move_mapping()
+        # Initialize state and action space sizes
+        self.input_size = game.observation_tensor_size()
+        self.output_size = game.num_distinct_actions()
         
-        output_size = len(self.move_to_index)
-        self.q_network = ChessNetwork(output_size=1)  # Q-network outputs single value
-        self.target_network = ChessNetwork(output_size=1)
-        self.average_policy_network = ChessNetwork(output_size=output_size)
+        # Initialize networks
+        self.q_network = ChessNet(self.input_size, hidden_size, self.output_size)
+        self.target_network = ChessNet(self.input_size, hidden_size, self.output_size)
+        self.target_network.load_state_dict(self.q_network.state_dict())
         
-        if model_path:
-            self.load_model(model_path)
+        self.optimizer = optim.Adam(self.q_network.parameters(), lr=learning_rate)
+        self.memory = ReplayBuffer(buffer_size)
         
-        self.q_optimizer = optim.Adam(self.q_network.parameters(), lr=learning_rate)
-        self.policy_optimizer = optim.Adam(self.average_policy_network.parameters(), lr=learning_rate)
-        
-        self.reservoir_buffer = ReplayBuffer(buffer_size)
-        self.sl_buffer = ReplayBuffer(buffer_size)
-        
-        self.training_losses = []
+        # Training metrics
+        self.losses = []
         self.win_rates = []
-    
-    def create_move_mapping(self):
-        """Create mapping between moves and indices"""
-        idx = 0
-        board = chess.Board()
+        self.epsilon_history = []
         
-        # Generate all possible moves from starting position
-        for from_square in chess.SQUARES:
-            for to_square in chess.SQUARES:
-                # Regular moves
-                move = chess.Move(from_square, to_square)
-                if move not in self.move_to_index:
-                    self.move_to_index[str(move)] = idx
-                    self.index_to_move[idx] = move
-                    idx += 1
-                
-                # Promotion moves
-                if ((from_square // 8 == 1 and to_square // 8 == 0) or 
-                    (from_square // 8 == 6 and to_square // 8 == 7)):
-                    for promotion in [chess.QUEEN, chess.ROOK, chess.BISHOP, chess.KNIGHT]:
-                        move = chess.Move(from_square, to_square, promotion=promotion)
-                        if str(move) not in self.move_to_index:
-                            self.move_to_index[str(move)] = idx
-                            self.index_to_move[idx] = move
-                            idx += 1
-        
-        print(f"Total number of possible moves: {len(self.move_to_index)}")
+    def state_to_tensor(self, state):
+        """Convert OpenSpiel state to PyTorch tensor"""
+        obs_tensor = state.observation_tensor(self.player_id)
+        return torch.FloatTensor(obs_tensor).unsqueeze(0)
     
-    def board_to_input(self, board):
-        """Convert python-chess board to neural network input"""
-        input_tensor = torch.zeros(773)
+    def select_action(self, state, training=True):
+        """Select action using epsilon-greedy policy"""
+        if training and random.random() < self.epsilon:
+            return random.choice(state.legal_actions())
         
-        # Piece placement
-        for square in chess.SQUARES:
-            piece = board.piece_at(square)
-            if piece:
-                piece_idx = (piece.piece_type - 1) + (6 if piece.color else 0)
-                input_tensor[square * 12 + piece_idx] = 1
-        
-        # Extra features
-        base_idx = 768
-        input_tensor[base_idx] = int(board.has_kingside_castling_rights(True))
-        input_tensor[base_idx + 1] = int(board.has_queenside_castling_rights(True))
-        input_tensor[base_idx + 2] = int(board.has_kingside_castling_rights(False))
-        input_tensor[base_idx + 3] = int(board.has_queenside_castling_rights(False))
-        input_tensor[base_idx + 4] = int(board.turn)
-        
-        return input_tensor
+        with torch.no_grad():
+            state_tensor = self.state_to_tensor(state)
+            q_values = self.q_network(state_tensor)
+            
+            # Mask illegal actions with large negative values
+            legal_actions = state.legal_actions()
+            mask = torch.ones(self.output_size) * float('-inf')
+            mask[legal_actions] = 0
+            q_values += mask
+            
+            return q_values.argmax().item()
     
-    def move_to_action(self, move):
-        """Convert python-chess move to action index"""
-        try:
-            return self.move_to_index[str(move)]
-        except KeyError:
-            return None
-    
-    def action_to_move(self, action):
-        """Convert action index to python-chess move"""
-        try:
-            return self.index_to_move[action]
-        except KeyError:
-            return None
-
-    def train_on_pgn(self, pgn_file, num_games=1000):
-        """Train the model using PGN data"""
-        with open(pgn_file) as f:
-            for _ in tqdm(range(num_games), desc="Training on PGN games"):
-                game = chess.pgn.read_game(f)
-                if game is None:
-                    break
-                
-                board = game.board()
-                for move in game.mainline_moves():
-                    action = self.move_to_action(move)
-                    
-                    if action is not None:
-                        state_tensor = self.board_to_input(board)
-                        board.push(move)
-                        next_state_tensor = self.board_to_input(board)
-                        
-                        self.reservoir_buffer.push(Experience(
-                            state_tensor,
-                            action,
-                            0,  # Intermediate reward
-                            next_state_tensor,
-                            False
-                        ))
-                        
-                        if len(self.reservoir_buffer) >= self.batch_size:
-                            self.train_step()
-    
-    def train_step(self):
-        """Perform a single training step"""
-        if len(self.reservoir_buffer) < self.batch_size:
+    def update_networks(self):
+        """Update neural networks using experience replay"""
+        if len(self.memory) < self.batch_size:
             return
         
-        # Sample batch
-        batch = self.reservoir_buffer.sample(self.batch_size)
-        state_batch = torch.stack([exp.state for exp in batch])
-        action_batch = torch.tensor([exp.action for exp in batch], dtype=torch.long)
-        next_state_batch = torch.stack([exp.next_state for exp in batch])
+        experiences = self.memory.sample(self.batch_size)
+        batch = Experience(*zip(*experiences))
         
-        # Train Q-network
-        self.q_optimizer.zero_grad()
-        q_values = self.q_network(state_batch)
-        next_q_values = self.target_network(next_state_batch).detach()
-        target_q_values = 0.99 * next_q_values  # Using gamma = 0.99
-        q_loss = nn.MSELoss()(q_values, target_q_values)
-        q_loss.backward()
-        self.q_optimizer.step()
+        state_batch = torch.cat([self.state_to_tensor(s) for s in batch.state])
+        action_batch = torch.LongTensor(batch.action).unsqueeze(1)
+        reward_batch = torch.FloatTensor(batch.reward).unsqueeze(1)
+        next_state_batch = torch.cat([self.state_to_tensor(s) for s in batch.next_state])
+        done_batch = torch.FloatTensor(batch.done).unsqueeze(1)
         
-        # Train average policy network
-        self.policy_optimizer.zero_grad()
-        logits = self.average_policy_network(state_batch)
-        policy_loss = nn.CrossEntropyLoss()(logits, action_batch)
-        policy_loss.backward()
-        self.policy_optimizer.step()
+        # Compute current Q values
+        current_q_values = self.q_network(state_batch).gather(1, action_batch)
         
-        self.training_losses.append(q_loss.item())
+        # Compute next Q values using target network
+        with torch.no_grad():
+            next_q_values = self.target_network(next_state_batch).max(1)[0].unsqueeze(1)
+            target_q_values = reward_batch + (1 - done_batch) * self.gamma * next_q_values
+        
+        # Compute loss and update Q-network
+        loss = nn.MSELoss()(current_q_values, target_q_values)
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
+        
+        self.losses.append(loss.item())
+        
+        # Update epsilon
+        self.epsilon = max(self.epsilon_end, self.epsilon * self.epsilon_decay)
+        self.epsilon_history.append(self.epsilon)
     
-    def step(self, board):
-        """Choose an action using the current policy"""
-        if random.random() < self.eta:
-            # Use best response policy (Q-network)
-            with torch.no_grad():
-                legal_moves = list(board.legal_moves)
-                if not legal_moves:
-                    return None
-                
-                action_values = []
-                for move in legal_moves:
-                    action = self.move_to_action(move)
-                    if action is not None:
-                        next_board = board.copy()
-                        next_board.push(move)
-                        next_state_tensor = self.board_to_input(next_board)
-                        value = self.q_network(next_state_tensor.unsqueeze(0))
-                        action_values.append((action, value.item()))
-                
-                if action_values:
-                    best_action = max(action_values, key=lambda x: x[1])[0]
-                    return self.action_to_move(best_action)
-                return random.choice(legal_moves)
-        else:
-            # Use average policy network
-            with torch.no_grad():
-                state_tensor = self.board_to_input(board)
-                logits = self.average_policy_network(state_tensor.unsqueeze(0))[0]
-                
-                # Create mask for legal moves
-                legal_moves = list(board.legal_moves)
-                if not legal_moves:
-                    return None
-                
-                legal_moves_mask = torch.zeros_like(logits)
-                legal_actions = []
-                for move in legal_moves:
-                    action = self.move_to_action(move)
-                    if action is not None:
-                        legal_moves_mask[action] = 1
-                        legal_actions.append(action)
-                
-                if not legal_actions:
-                    return random.choice(legal_moves)
-                
-                masked_logits = logits * legal_moves_mask
-                masked_logits[masked_logits == 0] = float('-inf')
-                probs = torch.softmax(masked_logits, dim=0)
-                
-                try:
-                    action = torch.multinomial(probs, 1).item()
-                    return self.action_to_move(action)
-                except:
-                    return random.choice(legal_moves)
+    def update_target_network(self):
+        """Update target network parameters"""
+        self.target_network.load_state_dict(self.q_network.state_dict())
     
     def save_model(self, path):
-        """Save model weights"""
+        """Save model parameters"""
+        os.makedirs(os.path.dirname(path), exist_ok=True)
         torch.save({
-            'q_network': self.q_network.state_dict(),
-            'target_network': self.target_network.state_dict(),
-            'average_policy_network': self.average_policy_network.state_dict(),
-            'move_to_index': self.move_to_index,
-            'index_to_move': self.index_to_move
+            'q_network_state_dict': self.q_network.state_dict(),
+            'target_network_state_dict': self.target_network.state_dict(),
+            'optimizer_state_dict': self.optimizer.state_dict(),
+            'epsilon': self.epsilon,
         }, path)
     
     def load_model(self, path):
-        """Load model weights"""
+        """Load model parameters"""
         checkpoint = torch.load(path)
-        self.q_network.load_state_dict(checkpoint['q_network'])
-        self.target_network.load_state_dict(checkpoint['target_network'])
-        self.average_policy_network.load_state_dict(checkpoint['average_policy_network'])
-        self.move_to_index = checkpoint['move_to_index']
-        self.index_to_move = checkpoint['index_to_move']
+        self.q_network.load_state_dict(checkpoint['q_network_state_dict'])
+        self.target_network.load_state_dict(checkpoint['target_network_state_dict'])
+        self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        self.epsilon = checkpoint['epsilon']
     
-    def plot_training_progress(self):
-        """Visualize training metrics"""
-        plt.figure(figsize=(12, 4))
+    def plot_metrics(self):
+        """Plot training metrics"""
+        fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(10, 15))
         
-        plt.subplot(1, 2, 1)
-        plt.plot(self.training_losses)
-        plt.title('Training Loss')
-        plt.xlabel('Training Step')
-        plt.ylabel('Loss')
+        # Plot loss
+        ax1.plot(self.losses)
+        ax1.set_title('Training Loss')
+        ax1.set_xlabel('Update Step')
+        ax1.set_ylabel('Loss')
         
-        plt.subplot(1, 2, 2)
-        plt.plot(self.win_rates)
-        plt.title('Win Rate')
-        plt.xlabel('Game')
-        plt.ylabel('Win Rate')
+        # Plot win rate
+        ax2.plot(self.win_rates)
+        ax2.set_title('Win Rate')
+        ax2.set_xlabel('Episode')
+        ax2.set_ylabel('Win Rate')
+        
+        # Plot epsilon
+        ax3.plot(self.epsilon_history)
+        ax3.set_title('Epsilon Value')
+        ax3.set_xlabel('Update Step')
+        ax3.set_ylabel('Epsilon')
         
         plt.tight_layout()
-        plt.savefig('nfsp_training_progress.png')
+        plt.show()
+    
+    def train(self, num_episodes, opponent=None):
+        """Train the agent through self-play or against an opponent"""
+        if opponent is None:
+            opponent = NFSPChessAgent(self.game, 1 - self.player_id)
+        
+        wins = 0
+        for episode in tqdm(range(num_episodes)):
+            state = self.game.new_initial_state()
+            done = False
+            
+            while not state.is_terminal():
+                current_player = state.current_player()
+                
+                if current_player == self.player_id:
+                    action = self.select_action(state, training=True)
+                else:
+                    action = opponent.select_action(state, training=False)
+                
+                # Store experience
+                old_state = state.clone()
+                state.apply_action(action)
+                reward = state.returns()[self.player_id] if state.is_terminal() else 0
+                
+                self.memory.push(Experience(
+                    old_state,
+                    action,
+                    reward,
+                    state.clone(),
+                    state.is_terminal()
+                ))
+                
+                # Update networks
+                self.update_networks()
+                
+                if episode % 10 == 0:
+                    self.update_target_network()
+            
+            # Track wins
+            if state.returns()[self.player_id] > 0:
+                wins += 1
+            
+            # Calculate and store win rate every 100 episodes
+            if (episode + 1) % 100 == 0:
+                win_rate = wins / 100
+                self.win_rates.append(win_rate)
+                wins = 0
+        
+        return self.win_rates[-1] if self.win_rates else 0
+
+# Integration with OpenSpiel environment
+def create_nfsp_bot(game, player_id):
+    """Factory function to create NFSP bot compatible with OpenSpiel"""
+    agent = NFSPChessAgent(game, player_id)
+    
+    class NFSPBot:
+        def __init__(self):
+            self.agent = agent
+        
+        def step(self, state):
+            return self.agent.select_action(state, training=False)
+        
+        def inform_action(self, state, player_id, action):
+            pass
+        
+        def restart(self):
+            pass
+    
+    return NFSPBot()
+
 
 if __name__ == '__main__':
     game = pyspiel.load_game("chess")
-    nfsp_standard = NFSPChessBot(game, player_id=0)
-    nfsp_standard.train_on_pgn("PGN_Data/lichess_db_standard_rated_2013-01.pgn")
-    nfsp_standard.save_model("nfsp_standard.pth")
+    nfsp_agent = NFSPChessAgent(game, player_id=0)
+    nfsp_agent.train(num_episodes=1000)
+    nfsp_agent.save_model("nfsp_chess_model.pt")
+    nfsp_agent.plot_metrics()
