@@ -6,7 +6,7 @@ import pyspiel
 class StockfishBot:
     """A bot that uses the Stockfish chess engine to make moves."""
     
-    def __init__(self, player_id, stockfish_path, time_limit=0.1):
+    def __init__(self, player_id, stockfish_path, time_limit=0.01):
         """Initialize the bot.
         
         Args:
@@ -17,7 +17,7 @@ class StockfishBot:
         self.player_id = player_id
         self.engine = chess.engine.SimpleEngine.popen_uci(stockfish_path)
         self.time_limit = time_limit
-        self.engine.configure({"Skill Level": 10})
+        self.engine.configure({"Skill Level": 0})
 
     def restart(self):
         """Restarts the bot to an initial state."""
