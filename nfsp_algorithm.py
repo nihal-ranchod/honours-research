@@ -171,7 +171,8 @@ class NFSPChessAgent:
         ax3.set_ylabel('Epsilon')
         
         plt.tight_layout()
-        plt.show()
+        plt.savefig('nfsp_training_metrics.png')
+        plt.close()
     
     def train(self, num_episodes, opponent=None):
         """Train the agent through self-play or against an opponent"""
@@ -247,5 +248,5 @@ if __name__ == '__main__':
     game = pyspiel.load_game("chess")
     nfsp_agent = NFSPChessAgent(game, player_id=0)
     nfsp_agent.train(num_episodes=500)
-    nfsp_agent.save_model("nfsp_chess_model.pt")
+    nfsp_agent.save_model("nfsp_chess_model")
     nfsp_agent.plot_metrics()
