@@ -28,7 +28,8 @@ import pyspiel
 
 # Add created Agents
 import mcts_algorithm as mcts
-from nfsp_algorithm import NFSPBot
+# from nfsp_algorithm import NFSPBot
+from nfsp2 import NFSPBot
 
 _KNOWN_PLAYERS = [
     # A vanilla Monte Carlo Tree Search agent.
@@ -112,7 +113,7 @@ def _init_bot(bot_type, game, player_id):
         solve=FLAGS.solve,
         verbose=FLAGS.verbose)
   if bot_type == "nfsp":
-    return NFSPBot(game, player_id, "nfsp_chess_model.pth")
+    return NFSPBot(game, player_id, "aggressive_nfsp_model_final.pth")
   if bot_type == "random":
     return uniform_random.UniformRandomBot(player_id, rng)
   if bot_type == "human":
