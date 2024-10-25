@@ -72,7 +72,7 @@ flags.DEFINE_bool("random_first", False, "Play the first move randomly.")
 flags.DEFINE_bool("solve", True, "Whether to use MCTS-Solver.")
 flags.DEFINE_bool("quiet", False, "Don't show the moves as they're played.")
 flags.DEFINE_bool("verbose", False, "Show the MCTS stats of possible moves.")
-flags.DEFINE_string("stockfish_path", "stockfish/stockfish", "Path to Stockfish engine executable.")
+flags.DEFINE_string("stockfish_path", "stockfish_5/stockfish", "Path to Stockfish engine executable.")
 
 FLAGS = flags.FLAGS
 

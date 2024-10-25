@@ -16,7 +16,7 @@
 
 import math
 import time
-
+from collections import defaultdict
 import numpy as np
 
 import pyspiel
@@ -450,59 +450,192 @@ class MCTSBot(pyspiel.Bot):
 
     return root
 
-class MCTSWithTraining(MCTSBot):
-    """
-    Implements a Monte-Carlo Tree Search (MCTS) algorithm with training capabilities.
+class EnhancedSearchNode(SearchNode):
+    """Extended SearchNode that can store state information."""
     
-    MCTSWithTraining is a subclass of MCTSBot that enhances the vanilla MCTS algorithm by leveraging historical game data
-    stored in a PGN (Portable Game Notation) file to inform its search process. This class initializes the search tree with
-    past games, providing a richer starting point for simulations.
+    __slots__ = SearchNode.__slots__ + ['state']
+    
+    def __init__(self, action, player, prior):
+        super().__init__(action, player, prior)
+        self.state = None
 
-    Methods:
-        __init__(game, uct_c, max_simulations, evaluator, pgn_file, random_state=None, solve=False, verbose=False):
-            Initializes the MCTSWithTraining instance with the given parameters and loads past games from the PGN file.
+class MCTSWithTraining(MCTSBot):
+    """Enhanced MCTS algorithm that incorporates learning from historical chess games."""
 
-        _load_pgn(pgn_file):
-            Reads the PGN file and loads the games into a list.
+    def __init__(
+        self,
+        game,
+        uct_c,
+        max_simulations,
+        evaluator,
+        training_data,
+        random_state=None,
+        solve=False,
+        verbose=False,
+        cache_size=1000000,
+        min_position_visits=5
+    ):
+        super().__init__(
+            game,
+            uct_c,
+            max_simulations, 
+            evaluator,
+            random_state=random_state,
+            solve=solve,
+            verbose=verbose
+        )
+        
+        self.position_stats = defaultdict(lambda: defaultdict(int))
+        self.eval_cache = {}
+        self.opening_book = {}
+        self.progressive_history = defaultdict(lambda: defaultdict(float))
+        self.cache_size = cache_size
+        self.min_position_visits = min_position_visits
+        
+        self._load_training_data(training_data)
 
-        _initialize_with_past_games(root):
-            Populates the search tree with nodes representing states from the past games.
-
-        search(state):
-            Performs the MCTS search, initializing the root of the search tree with past games and running simulations to
-            find the best move.
-
-    Attributes:
-        past_games (list): A list of past games loaded from the PGN file.
-    """
-
-    def __init__(self, game, uct_c, max_simulations, evaluator, training_data, random_state=None, solve=False, verbose=False):
-        super().__init__(game, uct_c, max_simulations, evaluator, random_state=random_state, solve=solve, verbose=verbose)
-        self.past_games = self._load_pgn(training_data)
-
-    def _load_pgn(self, pgn_file):
-        past_games = []
+    def _load_training_data(self, pgn_file):
+        """Load and process historical games from PGN file."""
         with open(pgn_file) as f:
             while True:
                 game = chess.pgn.read_game(f)
                 if game is None:
                     break
-                past_games.append(game)
-        return past_games
+                
+                board = game.board()
+                outcome = game.headers.get("Result", "*")
+                
+                for move in game.mainline_moves():
+                    position_key = self._get_state_key_from_board(board)
+                    
+                    self.position_stats[position_key][move.uci()] += 1
+                    
+                    if board.fullmove_number <= 15:
+                        if position_key not in self.opening_book:
+                            self.opening_book[position_key] = []
+                        self.opening_book[position_key].append(move.uci())
+                    
+                    if outcome == "1-0":
+                        self._update_progressive_history(move.uci(), 1.0)
+                    elif outcome == "0-1":
+                        self._update_progressive_history(move.uci(), 0.0)
+                    elif outcome == "1/2-1/2":
+                        self._update_progressive_history(move.uci(), 0.5)
+                        
+                    board.push(move)
 
-    def _initialize_with_past_games(self, root):
-        for game in self.past_games:
-            board = game.board()
-            for move in game.mainline_moves():
-                board.push(move)
-                state = pyspiel.State.from_fen(board.fen())
-                node = SearchNode(None, state.current_player(), 1)
-                root.children.append(node)
-                root = node
+    def _get_state_key_from_board(self, board):
+        """Get position key from a python-chess board."""
+        return board.fen().split(' ')[0]
 
-    def search(self, state):
-        root = SearchNode(None, state.current_player(), 1)
-        self._initialize_with_past_games(root)
+    def _get_state_key(self, state):
+        """Get position key from an OpenSpiel state."""
+        return state.observation_string(state.current_player())
+
+    def _update_progressive_history(self, move, outcome, learning_rate=0.1):
+        """Update the progressive history scores for a move."""
+        current_value = self.progressive_history['all'][move]
+        self.progressive_history['all'][move] = (
+            current_value + learning_rate * (outcome - current_value)
+        )
+
+    def _get_prior_policy(self, state):
+        """Get enhanced prior move probabilities using historical data."""
+        legal_actions = state.legal_actions()
+        state_key = self._get_state_key(state)
+        
+        prior_probs = np.ones(len(legal_actions)) / len(legal_actions)
+        
+        if state_key in self.opening_book:
+            book_moves = set(self.opening_book[state_key])
+            for i, action in enumerate(legal_actions):
+                move_uci = self._action_to_uci(state, action)
+                if move_uci in book_moves:
+                    prior_probs[i] *= 2.0
+                    
+        pos_total = sum(self.position_stats[state_key].values())
+        if pos_total >= self.min_position_visits:
+            for i, action in enumerate(legal_actions):
+                move_uci = self._action_to_uci(state, action)
+                count = self.position_stats[state_key][move_uci]
+                if count > 0:
+                    prior_probs[i] *= (count / pos_total)
+                    
+        for i, action in enumerate(legal_actions):
+            move_uci = self._action_to_uci(state, action)
+            history_score = self.progressive_history['all'][move_uci]
+            if history_score > 0:
+                prior_probs[i] *= (1.0 + history_score)
+                
+        prior_sum = prior_probs.sum()
+        if prior_sum > 0:
+            prior_probs /= prior_sum
+        else:
+            prior_probs = np.ones(len(legal_actions)) / len(legal_actions)
+        
+        return list(zip(legal_actions, prior_probs))
+
+    def _action_to_uci(self, state, action):
+        """Convert OpenSpiel action to UCI format."""
+        return state.action_to_string(state.current_player(), action)
+
+    def _select_child(self, node, state):
+        """Enhanced child selection using both UCT and historical data."""
+        if not node.children:
+            return None
+            
+        best_value = float("-inf")
+        best_child = None
+        
+        for child in node.children:
+            uct_score = child.uct_value(node.explore_count, self.uct_c)
+            
+            move_uci = self._action_to_uci(state, child.action)
+            history_bonus = self.progressive_history['all'][move_uci]
+            
+            total_score = uct_score + 0.1 * history_bonus
+            
+            if total_score > best_value:
+                best_value = total_score
+                best_child = child
+                
+        return best_child
+
+    def step_with_policy(self, state):
+        """Enhanced version of step_with_policy using historical data."""
+        state_key = self._get_state_key(state)
+        if state_key in self.eval_cache:
+            cached_policy, cached_value = self.eval_cache[state_key]
+            if cached_value > 0.9:
+                return cached_policy, max(cached_policy, key=lambda x: x[1])[0]
+        
+        root = self.mcts_search(state)
+        
+        best_child = root.best_child()
+        mcts_action = best_child.action
+        
+        total_visits = sum(c.explore_count for c in root.children)
+        policy = [
+            (c.action, c.explore_count / total_visits)
+            for c in root.children
+        ]
+        
+        if len(self.eval_cache) < self.cache_size:
+            self.eval_cache[state_key] = (policy, best_child.total_reward / best_child.explore_count)
+            
+        return policy, mcts_action
+
+    def mcts_search(self, state):
+        """Enhanced MCTS search incorporating historical data."""
+        root = EnhancedSearchNode(None, state.current_player(), 1)
+        root.state = state.clone()
+        
+        prior_policy = self._get_prior_policy(state)
+        root.children = [
+            EnhancedSearchNode(action, state.current_player(), prior)
+            for action, prior in prior_policy
+        ]
+        
         for _ in range(self.max_simulations):
             visit_path, working_state = self._apply_tree_policy(root, state)
             if working_state.is_terminal():
@@ -512,18 +645,92 @@ class MCTSWithTraining(MCTSBot):
             else:
                 returns = self.evaluator.evaluate(working_state)
                 solved = False
+                
+            self._backup(visit_path, returns, solved)
+            
+            if root.outcome is not None:
+                break
+                
+        return root
 
-            while visit_path:
-                decision_node_idx = -1
-                while visit_path[decision_node_idx].player == pyspiel.PlayerId.CHANCE:
-                    decision_node_idx -= 1
-                target_return = returns[visit_path[decision_node_idx].player]
-                node = visit_path.pop()
-                node.total_reward += target_return
-                node.explore_count += 1
-
-                if solved and node.children:
-                    node.solved = True
+    def _backup(self, visit_path, returns, solved):
+        """Enhanced backup procedure incorporating progressive history updates."""
+        while visit_path:
+            node = visit_path.pop()
+            
+            node.total_reward += returns[node.player]
+            node.explore_count += 1
+            
+            if solved and node.children:
+                if self._check_solved_state(node, returns):
                     node.outcome = returns
-        return max(root.children, key=lambda n: n.explore_count).move
-    
+                else:
+                    solved = False
+                    
+            if node.action is not None and node.state is not None:
+                move_uci = self._action_to_uci(node.state, node.action)
+                self._update_progressive_history(
+                    move_uci,
+                    node.total_reward / node.explore_count
+                )
+
+    def _check_solved_state(self, node, returns):
+        """Check if a node should be marked as solved."""
+        if not node.children:
+            return True
+            
+        player = node.player
+        if player == pyspiel.PlayerId.CHANCE:
+            first_outcome = node.children[0].outcome
+            return all(
+                child.outcome is not None and
+                np.array_equal(child.outcome, first_outcome)
+                for child in node.children
+            )
+        else:
+            best_outcome = None
+            all_solved = True
+            
+            for child in node.children:
+                if child.outcome is None:
+                    all_solved = False
+                elif (best_outcome is None or 
+                      child.outcome[player] > best_outcome[player]):
+                    best_outcome = child.outcome
+                    
+            return (best_outcome is not None and
+                    (all_solved or best_outcome[player] == self.max_utility))
+
+    def _apply_tree_policy(self, root, state):
+        """Apply the UCT policy to play the game until reaching a leaf node."""
+        visit_path = [root]
+        working_state = state.clone()
+        current_node = root
+        
+        while (not working_state.is_terminal() and
+               current_node.explore_count > 0):
+            
+            if not current_node.children:
+                legal_actions = self.evaluator.prior(working_state)
+                player = working_state.current_player()
+                current_node.children = [
+                    EnhancedSearchNode(action, player, prior) 
+                    for action, prior in legal_actions
+                ]
+
+            if working_state.is_chance_node():
+                outcomes = working_state.chance_outcomes()
+                action_list, prob_list = zip(*outcomes)
+                action = self._random_state.choice(action_list, p=prob_list)
+                chosen_child = next(c for c in current_node.children if c.action == action)
+            else:
+                chosen_child = self._select_child(current_node, working_state)
+                if chosen_child is None:
+                    break
+
+            chosen_child.state = working_state.clone()
+            working_state.apply_action(chosen_child.action)
+            current_node = chosen_child
+            visit_path.append(current_node)
+
+        return visit_path, working_state
