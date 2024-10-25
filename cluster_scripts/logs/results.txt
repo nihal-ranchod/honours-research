@@ -1,1 +1,1 @@
-[W1023 12:07:23.858504368 NNPACK.cpp:61] Could not initialize NNPACK! Reason: Unsupported hardware.
+[W1025 12:03:57.936922077 NNPACK.cpp:61] Could not initialize NNPACK! Reason: Unsupported hardware.
