@@ -5,8 +5,8 @@ def train_standard_bot():
     bot = GeneticChessBot(population_size=100)
     bot.train_on_pgn(
         pgn_file="PGN_Data/lichess_db_standard_rated_2013-01.pgn",
-        num_generations=2500,
-        games_per_genome=500
+        num_generations=1500,
+        games_per_genome=250
     )
     bot.save_best_genome("best_genome.pkl")
     bot.plot_learning_progress("Standard PGN Data")
@@ -16,8 +16,8 @@ def train_puzzle_bot():
     bot = GeneticChessBot(population_size=100)
     bot.train_on_puzzles(
         puzzle_pgn_file="PGN_Data/lichess_db_puzzle_converted.pgn",
-        num_generations=2500,
-        puzzles_per_genome=500
+        num_generations=1500,
+        puzzles_per_genome=250
     )
     bot.save_best_genome("best_genome_puzzle.pkl")
     bot.plot_learning_progress("Puzzle PGN Data")
