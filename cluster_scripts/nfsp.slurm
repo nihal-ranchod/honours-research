@@ -8,4 +8,5 @@
 source ~/.bashrc
 conda activate research
 
-python nfsp_test.py
+python3 nfsp_algorithm.py
+

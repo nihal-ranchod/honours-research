@@ -25,6 +25,7 @@ import pyspiel
 
 # Add created Agents
 import mcts_algorithm as mcts
+from nfsp_algorithm import NFSPBot
 from baseline import StockfishBot
 
 _KNOWN_PLAYERS = [
@@ -112,6 +113,8 @@ def _init_bot(bot_type, game, player_id):
         random_state=rng,
         solve=FLAGS.solve,
         verbose=FLAGS.verbose)
+  if bot_type == "nfsp":
+    return NFSPBot(game, player_id, "aggressive_nfsp_model_final.pth")
   if bot_type == "stockfish":
     return StockfishBot(player_id, FLAGS.stockfish_path)
   if bot_type == "random":
