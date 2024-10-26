@@ -1,267 +1,386 @@
-import os
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import torch.nn.functional as F
 import numpy as np
 import pyspiel
-import random
-import chess
-from collections import deque
-from tqdm import tqdm
 import matplotlib.pyplot as plt
+from collections import deque, namedtuple
+import random
+import os
+from tqdm import tqdm
+import chess
+import chess.pgn
+
+Experience = namedtuple('Experience', ['state', 'action', 'reward', 'next_state', 'done'])
+
+class ChessStateEncoder:
+    """Encodes chess state into a neural network-compatible format"""
+    def __init__(self):
+        self.input_size = 8 * 8 * 6 * 2 + 8  # 8x8 board, 6 piece types, 2 colors, 8 extra features
+        
+    def encode_state(self, state):
+        """Convert OpenSpiel state to tensor"""
+        # Get FEN string from state
+        fen = state.observation_string(0)  # Get observation for player 0
+        board = chess.Board(fen)
+        
+        # Initialize the encoded state
+        encoded = np.zeros((8, 8, 12), dtype=np.float32)
+        
+        # Encode each piece
+        for square in chess.SQUARES:
+            piece = board.piece_at(square)
+            if piece is not None:
+                rank = square // 8
+                file = square % 8
+                # Get piece index (0-5 for white pieces, 6-11 for black pieces)
+                piece_idx = piece.piece_type - 1
+                if not piece.color:  # If black
+                    piece_idx += 6
+                encoded[rank][file][piece_idx] = 1
+        
+        # extra features
+        extra_features = np.zeros(8, dtype=np.float32)
+        extra_features[0] = 1 if board.turn else 0  # Current player
+        extra_features[1] = int(board.is_check())  # Check state
+        extra_features[2] = board.fullmove_number / 100.0  # Normalized move number
+        extra_features[3] = 1 if board.has_kingside_castling_rights(chess.WHITE) else 0
+        extra_features[4] = 1 if board.has_queenside_castling_rights(chess.WHITE) else 0
+        extra_features[5] = 1 if board.has_kingside_castling_rights(chess.BLACK) else 0
+        extra_features[6] = 1 if board.has_queenside_castling_rights(chess.BLACK) else 0
+        extra_features[7] = board.halfmove_clock / 100.0  # Normalized halfmove clock
+        
+        # Flatten and concatenate
+        return np.concatenate([encoded.flatten(), extra_features])
 
 class ChessNet(nn.Module):
-    def __init__(self, hidden_size=512):
+    def __init__(self, input_size, hidden_size, output_size):
         super(ChessNet, self).__init__()
-        # 8x8x13 input: 8x8 board, 13 piece types (6 white, 6 black, empty)
-        self.input_channels = 13
-        
-        # Convolutional layers
-        self.conv1 = nn.Conv2d(self.input_channels, 64, kernel_size=3, padding=1)
-        self.conv2 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
-        self.conv3 = nn.Conv2d(128, 256, kernel_size=3, padding=1)
-        
-        # Fully connected layers
-        self.fc1 = nn.Linear(256 * 8 * 8, hidden_size)
-        self.fc2 = nn.Linear(hidden_size, hidden_size)
-        self.policy_head = nn.Linear(hidden_size, 4672)  # Max possible chess moves
-        self.value_head = nn.Linear(hidden_size, 1)
+        self.network = nn.Sequential(
+            nn.Linear(input_size, hidden_size),
+            nn.ReLU(),
+            nn.LayerNorm(hidden_size),
+            nn.Linear(hidden_size, hidden_size * 2),
+            nn.ReLU(),
+            nn.Dropout(0.2),
+            nn.LayerNorm(hidden_size * 2),
+            nn.Linear(hidden_size * 2, hidden_size * 2),
+            nn.ReLU(),
+            nn.Dropout(0.2),
+            nn.LayerNorm(hidden_size * 2),
+            nn.Linear(hidden_size * 2, output_size)
+        )
         
     def forward(self, x):
-        x = F.relu(self.conv1(x))
-        x = F.relu(self.conv2(x))
-        x = F.relu(self.conv3(x))
-        x = x.view(-1, 256 * 8 * 8)
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        policy = F.softmax(self.policy_head(x), dim=1)
-        value = torch.tanh(self.value_head(x))
-        return policy, value
+        return self.network(x)
 
-class ReplayBuffer:
-    def __init__(self, capacity):
-        self.buffer = deque(maxlen=capacity)
-        
-    def push(self, state, action, reward, next_state, done):
-        self.buffer.append((state, action, reward, next_state, done))
-        
-    def sample(self, batch_size):
-        states, actions, rewards, next_states, dones = zip(*random.sample(self.buffer, batch_size))
-        return (np.array(states), np.array(actions), np.array(rewards), 
-                np.array(next_states), np.array(dones))
-    
-    def __len__(self):
-        return len(self.buffer)
-
-class NFSPChessAgent:
-    def __init__(self, game, learning_rate=0.001, batch_size=32, replay_capacity=100000):
+class AggressiveNFSP:
+    def __init__(self, game, learning_rate=0.001, hidden_size=512, memory_size=100000, 
+                 batch_size=32, gamma=0.99, epsilon_start=1.0, epsilon_end=0.1, 
+                 epsilon_decay=0.995):
         self.game = game
+        self.state_encoder = ChessStateEncoder()
+        self.input_size = self.state_encoder.input_size
+        self.output_size = 4672  # Maximum possible moves in chess
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.policy_net = ChessNet().to(self.device)
-        self.target_net = ChessNet().to(self.device)
+        
+        # Initialize networks
+        self.policy_net = ChessNet(self.input_size, hidden_size, self.output_size).to(self.device)
+        self.target_net = ChessNet(self.input_size, hidden_size, self.output_size).to(self.device)
         self.target_net.load_state_dict(self.policy_net.state_dict())
         
+        # Training parameters
         self.optimizer = optim.Adam(self.policy_net.parameters(), lr=learning_rate)
-        self.replay_buffer = ReplayBuffer(replay_capacity)
+        self.memory = deque(maxlen=memory_size)
         self.batch_size = batch_size
+        self.gamma = gamma
         
-        self.piece_to_index = {
-            'P': 0, 'N': 1, 'B': 2, 'R': 3, 'Q': 4, 'K': 5,  # White pieces
-            'p': 6, 'n': 7, 'b': 8, 'r': 9, 'q': 10, 'k': 11  # Black pieces
-        }
+        # Exploration parameters
+        self.epsilon = epsilon_start
+        self.epsilon_end = epsilon_end
+        self.epsilon_decay = epsilon_decay
         
-        self.training_stats = {
-            'policy_loss': [],
-            'value_loss': [],
-            'average_reward': []
-        }
-
-    def board_to_tensor(self, state):
-        """Convert OpenSpiel chess state to tensor representation"""
-        board = chess.Board(str(state))
-        state_tensor = np.zeros((13, 8, 8), dtype=np.float32)
+        # Training metrics
+        self.losses = []
+        self.avg_rewards = []
         
-        # Fill the state tensor
-        for i in range(64):
-            rank, file = i // 8, i % 8
-            piece = board.piece_at(i)
-            if piece is not None:
-                piece_idx = self.piece_to_index[piece.symbol()]
-                state_tensor[piece_idx][rank][file] = 1
-            else:
-                state_tensor[12][rank][file] = 1  # Empty square channel
-        
-        return torch.FloatTensor(state_tensor).unsqueeze(0).to(self.device)
-
-    def select_action(self, state, epsilon=0.1):
-        """Select an action from the given state"""
-        legal_actions = state.legal_actions()
-        if not legal_actions:
+    def san_to_move(self, board, san_move):
+        """Convert SAN move to chess.Move object"""
+        try:
+            return board.parse_san(san_move)
+        except ValueError:
             return None
+
+    def state_to_tensor(self, state):
+        """Convert game state to tensor"""
+        encoded_state = self.state_encoder.encode_state(state)
+        return torch.FloatTensor(encoded_state).unsqueeze(0).to(self.device)
+    
+    def evaluate_position(self, board):
+        """Evaluate chess position with emphasis on aggressive features"""
+        if board.is_checkmate():
+            return 1.0 if board.turn else -1.0
+        
+        score = 0.0
+        # Material count with aggressive weights
+        piece_values = {
+            chess.PAWN: 1,
+            chess.KNIGHT: 3,
+            chess.BISHOP: 3,
+            chess.ROOK: 5,
+            chess.QUEEN: 9,
+            chess.KING: 0
+        }
+        
+        for piece_type in piece_values:
+            score += len(board.pieces(piece_type, chess.WHITE)) * piece_values[piece_type]
+            score -= len(board.pieces(piece_type, chess.BLACK)) * piece_values[piece_type]
+        
+        # Bonus for attacking moves
+        if board.is_check():
+            score += 0.5
             
-        if random.random() < epsilon:
+        # Bonus for controlling center
+        center_squares = {chess.E4, chess.E5, chess.D4, chess.D5}
+        for square in center_squares:
+            piece = board.piece_at(square)
+            if piece:
+                if piece.color == chess.WHITE:
+                    score += 0.2
+                else:
+                    score -= 0.2
+                    
+        return score
+    
+    def calculate_reward(self, state, action, next_state):
+        """Calculate reward with emphasis on aggressive play"""
+        try:
+            current_board = chess.Board(state.observation_string(0))
+            next_board = chess.Board(next_state.observation_string(0))
+            
+            # Convert SAN move to chess.Move object
+            san_move = state.action_to_string(state.current_player(), action)
+            move = self.san_to_move(current_board, san_move)
+            
+            if move is None:
+                return 0.0  # Return neutral reward if move parsing fails
+            
+            # Calculate position evaluation change
+            current_eval = self.evaluate_position(current_board)
+            next_eval = self.evaluate_position(next_board)
+            reward = next_eval - current_eval
+            
+            # Add bonus rewards for aggressive play
+            # Bonus for captures
+            if current_board.is_capture(move):
+                captured_piece = current_board.piece_at(move.to_square)
+                if captured_piece:
+                    piece_values = {'P': 1, 'N': 3, 'B': 3, 'R': 5, 'Q': 9}
+                    reward += piece_values.get(captured_piece.symbol().upper(), 0) * 0.1
+            
+            # Bonus for checks
+            if next_board.is_check():
+                reward += 0.2
+            
+            # Bonus for attacking center squares
+            center_squares = {chess.E4, chess.E5, chess.D4, chess.D5}
+            if move.to_square in center_squares:
+                reward += 0.1
+            
+            return reward
+            
+        except (ValueError, AttributeError) as e:
+            print(f"Error calculating reward: {e}")
+            return 0.0  # Return neutral reward in case of error
+    
+    def select_action(self, state, legal_actions, training=True):
+        """Select action using epsilon-greedy policy with preference for aggressive moves"""
+        if training and random.random() < self.epsilon:
             return random.choice(legal_actions)
         
         with torch.no_grad():
-            state_tensor = self.board_to_tensor(state)
-            policy, _ = self.policy_net(state_tensor)
+            state_tensor = self.state_to_tensor(state)
+            q_values = self.policy_net(state_tensor)
             
-            # Get probabilities only for legal actions
-            legal_probs = torch.zeros(len(legal_actions))
-            for i, action in enumerate(legal_actions):
-                legal_probs[i] = policy[0][action]
+            # Mask illegal actions
+            legal_actions_mask = torch.zeros(self.output_size, device=self.device)
+            legal_actions_mask[legal_actions] = 1
+            q_values = q_values * legal_actions_mask - 1e9 * (1 - legal_actions_mask)
             
-            # Select the legal action with highest probability
-            action_idx = legal_probs.argmax().item()
-            return legal_actions[action_idx]
-
-    def train_step(self):
-        if len(self.replay_buffer) < self.batch_size:
+            return q_values.argmax(1).item()
+    
+    def store_experience(self, state, action, reward, next_state, done):
+        """Store experience in replay memory"""
+        self.memory.append(Experience(
+            self.state_to_tensor(state).squeeze(0),
+            action,
+            torch.FloatTensor([reward]).to(self.device),
+            self.state_to_tensor(next_state).squeeze(0) if next_state else None,
+            done
+        ))
+    
+    def train_batch(self):
+        """Train on a batch of experiences"""
+        if len(self.memory) < self.batch_size:
             return
         
-        states, actions, rewards, next_states, dones = self.replay_buffer.sample(self.batch_size)
+        experiences = random.sample(self.memory, self.batch_size)
+        batch = Experience(*zip(*experiences))
         
-        # Convert states to tensors
-        state_batch = torch.cat([self.board_to_tensor(s) for s in states])
-        next_state_batch = torch.cat([self.board_to_tensor(s) for s in next_states])
+        state_batch = torch.stack(batch.state)
+        action_batch = torch.LongTensor(batch.action).to(self.device)
+        reward_batch = torch.cat(batch.reward)
         
-        action_batch = torch.LongTensor(actions).to(self.device)
-        reward_batch = torch.FloatTensor(rewards).to(self.device)
-        done_batch = torch.FloatTensor(dones).to(self.device)
+        # Compute current Q values
+        current_q_values = self.policy_net(state_batch).gather(1, action_batch.unsqueeze(1))
         
-        # Compute policy loss
-        current_policy, current_value = self.policy_net(state_batch)
-        policy_loss = F.cross_entropy(current_policy, action_batch)
+        # Compute next Q values
+        next_q_values = torch.zeros(self.batch_size, device=self.device)
+        non_final_mask = torch.tensor([s is not None for s in batch.next_state], 
+                                    device=self.device, dtype=torch.bool)
+        if any(non_final_mask):
+            non_final_next_states = torch.stack([s for s in batch.next_state if s is not None])
+            next_q_values[non_final_mask] = self.target_net(non_final_next_states).max(1)[0].detach()
         
-        # Compute value loss
-        next_policy, next_value = self.target_net(next_state_batch)
-        expected_value = reward_batch + (1 - done_batch) * 0.99 * next_value.squeeze()
-        value_loss = F.mse_loss(current_value.squeeze(), expected_value.detach())
+        # Compute expected Q values
+        expected_q_values = reward_batch + self.gamma * next_q_values
         
-        # Combined loss
-        loss = policy_loss + value_loss
-        
+        # Compute loss and optimize
+        loss = nn.MSELoss()(current_q_values, expected_q_values.unsqueeze(1))
         self.optimizer.zero_grad()
         loss.backward()
+        torch.nn.utils.clip_grad_norm_(self.policy_net.parameters(), 1.0)
         self.optimizer.step()
         
-        self.training_stats['policy_loss'].append(policy_loss.item())
-        self.training_stats['value_loss'].append(value_loss.item())
+        return loss.item()
+    
+    def train(self, num_episodes=1000):
+        """Train the agent through self-play"""
+        print(f"Training on {self.device}...")
+        progress_bar = tqdm(range(num_episodes), desc="Training Episodes")
         
-        return policy_loss.item(), value_loss.item()
-
-    def train(self, num_episodes=1000, steps_per_update=100):
-        print("Starting training...")
-        episode_rewards = []
-        
-        for episode in tqdm(range(num_episodes)):
+        for episode in progress_bar:
             state = self.game.new_initial_state()
             episode_reward = 0
             
             while not state.is_terminal():
-                action = self.select_action(state)
-                if action is None:
+                legal_actions = state.legal_actions()
+                if not legal_actions:
                     break
                     
-                # Store current state
-                current_state = state.clone()
+                current_player = state.current_player()
                 
-                # Apply action and get next state
-                state.apply_action(action)
-                reward = state.returns()[current_state.current_player()]
-                done = state.is_terminal()
+                # Select and apply action
+                action = self.select_action(state, legal_actions, training=True)
+                next_state = state.clone()
+                next_state.apply_action(action)
                 
-                # Store experience
-                self.replay_buffer.push(
-                    current_state,
-                    action,
-                    reward,
-                    state,
-                    done
-                )
+                # Calculate reward
+                reward = self.calculate_reward(state, action, next_state)
+                episode_reward += reward if current_player == 0 else -reward
                 
-                if len(self.replay_buffer) > self.batch_size:
-                    self.train_step()
+                # Store experience and train
+                if current_player == 0:  # Only store experiences for the main agent
+                    self.store_experience(state, action, reward, next_state, next_state.is_terminal())
+                    loss = self.train_batch()
+                    if loss:
+                        self.losses.append(loss)
                 
-                episode_reward += reward
+                state = next_state
             
-            episode_rewards.append(episode_reward)
-            self.training_stats['average_reward'].append(episode_reward)
+            # Update metrics
+            self.avg_rewards.append(episode_reward)
             
             # Update target network periodically
-            if episode % steps_per_update == 0:
+            if episode % 100 == 0:
                 self.target_net.load_state_dict(self.policy_net.state_dict())
+            
+            # Decay epsilon
+            self.epsilon = max(self.epsilon_end, self.epsilon * self.epsilon_decay)
+            
+            # Update progress bar
+            progress_bar.set_postfix({
+                'Epsilon': f'{self.epsilon:.3f}',
+                'Avg Reward': f'{np.mean(self.avg_rewards[-100:]):.3f}'
+            })
+            
+            # Plot training progress periodically
+            if (episode + 1) % 100 == 0:
+                self.plot_training_progress()
+                # self.save_model(f"aggressive_nfsp_model_episode_{episode+1}.pth")
         
-        self.plot_training_progress()
-        return episode_rewards
-
+        self.save_model("aggressive_nfsp_model_final.pth")
+        print("Training completed!")
+    
     def plot_training_progress(self):
-        fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(10, 15))
+        """Plot training metrics"""
+        plt.figure(figsize=(15, 5))
         
-        # Plot policy loss
-        ax1.plot(self.training_stats['policy_loss'])
-        ax1.set_title('Policy Loss')
-        ax1.set_xlabel('Training Steps')
-        ax1.set_ylabel('Loss')
+        # Plot losses
+        plt.subplot(1, 2, 1)
+        plt.plot(self.losses)
+        plt.title('Training Loss')
+        plt.xlabel('Training Steps')
+        plt.ylabel('Loss')
         
-        # Plot value loss
-        ax2.plot(self.training_stats['value_loss'])
-        ax2.set_title('Value Loss')
-        ax2.set_xlabel('Training Steps')
-        ax2.set_ylabel('Loss')
-        
-        # Plot average reward with smoothing
-        window_size = 100
-        rewards = np.array(self.training_stats['average_reward'])
-        smoothed_rewards = np.convolve(rewards, np.ones(window_size)/window_size, mode='valid')
-        ax3.plot(smoothed_rewards)
-        ax3.set_title('Average Reward (Smoothed)')
-        ax3.set_xlabel('Episode')
-        ax3.set_ylabel('Reward')
+        # Plot average rewards
+        plt.subplot(1, 2, 2)
+        plt.plot(self.avg_rewards)
+        plt.title('Average Episode Reward')
+        plt.xlabel('Episode')
+        plt.ylabel('Reward')
         
         plt.tight_layout()
-        plt.savefig('nfsp_training_progress.png')
+        plt.savefig('training_progress.png')
         plt.close()
-
+    
     def save_model(self, path):
+        """Save the trained model"""
         torch.save({
             'policy_net_state_dict': self.policy_net.state_dict(),
             'target_net_state_dict': self.target_net.state_dict(),
             'optimizer_state_dict': self.optimizer.state_dict(),
+            'epsilon': self.epsilon,
+            'training_metrics': {
+                'losses': self.losses,
+                'avg_rewards': self.avg_rewards,
+            }
         }, path)
     
     def load_model(self, path):
-        checkpoint = torch.load(path)
+        """Load a trained model"""
+        checkpoint = torch.load(path, map_location=self.device)
         self.policy_net.load_state_dict(checkpoint['policy_net_state_dict'])
         self.target_net.load_state_dict(checkpoint['target_net_state_dict'])
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        self.epsilon = checkpoint['epsilon']
+        self.losses = checkpoint['training_metrics']['losses']
+        self.avg_rewards = checkpoint['training_metrics']['avg_rewards']
 
-class NFSPBot:
-    """Bot interface for OpenSpiel integration"""
-    def __init__(self, game, player_id, agent_path):
-        self.game = game
+class NFSPBot(pyspiel.Bot):
+    def __init__(self, game, player_id, model_path):
+        pyspiel.Bot.__init__(self)
+        self.agent = AggressiveNFSP(game)
+        self.agent.load_model(model_path)
         self.player_id = player_id
-        self.agent = NFSPChessAgent(game)
-        self.agent.load_model(agent_path)
-        
+
     def step(self, state):
-        """Returns the action to take in the given state."""
-        return self.agent.select_action(state, epsilon=0)
-        
-    def restart(self):
-        pass
-        
+        legal_actions = state.legal_actions()
+        if not legal_actions:
+            return None
+        return self.agent.select_action(state, legal_actions, training=False)
+    
     def inform_action(self, state, player_id, action):
         pass
 
-def train_nfsp_agent():
+    def restart(self):
+        pass
+
+def train_agent():
     game = pyspiel.load_game("chess")
-    agent = NFSPChessAgent(game)
-    rewards = agent.train(num_episodes=1000)
-    agent.save_model("nfsp_chess_model.pth")
-    print("Training completed and model saved!")
+    agent = AggressiveNFSP(game)
+    agent.train(num_episodes=5000)
     return agent
 
 if __name__ == "__main__":
-    trained_agent = train_nfsp_agent()
+    trained_agent = train_agent()

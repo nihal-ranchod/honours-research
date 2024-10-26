@@ -19,17 +19,13 @@ import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
 
-#from open_spiel.python.algorithms import mcts
-# from open_spiel.python.algorithms.alpha_zero import evaluator as az_evaluator
-# from open_spiel.python.algorithms.alpha_zero import model as az_model
 from open_spiel.python.bots import human
 from open_spiel.python.bots import uniform_random
 import pyspiel
 
 # Add created Agents
 import mcts_algorithm as mcts
-# from nfsp_algorithm import NFSPBot
-from nfsp2 import NFSPBot
+from nfsp_algorithm import NFSPBot
 
 _KNOWN_PLAYERS = [
     # A vanilla Monte Carlo Tree Search agent.
