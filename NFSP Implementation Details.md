@@ -12,7 +12,7 @@
    - [4. Supervised and Reinforcement Learning Integration](#4-supervised-and-reinforcement-learning-integration)
    - [5. Aggressive Play Rationale](#5-aggressive-play-rationale)
 5. [Training and Evaluation](#training-and-evaluation)
-6. [Performance and Insights](#performance-and-insights)
+6. [Insights](#performance-and-insights)
 
 ---
 
