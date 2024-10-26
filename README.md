@@ -15,6 +15,9 @@ pip install pandas
 pip install ches.pgn
 pip install pyspiel
 pip install tqdm
+pip install torch
+pip install numpy
+pip install matlplotlib
 ```
 
 ### To run a single game of Monte Carlo Tree Search Variants:
@@ -23,9 +26,11 @@ pip install tqdm
 - Random Agents: `random`
 - Human Player: `human`
 - Vanilla MCTS: `mcts`
-- Trained MCTS: `mcts_trained`
+- MCTS leveraging historical PGN Chess Data: `mcts_trained_pgn`
+- MCTS leveraging historical PGN Puzzle Data: `mcts_trained_puzzle`
 - Genetic Algorithm Agent: `ga`
 - Neural Fictitous Self-Play Agent: `nfsp`
+- Baseline Stockfish engine playing at level 5 (Elo rating: 1400-1500): `stockfish`
 
     - White player: `bot1`
     - Black player: `bot2`
@@ -36,15 +41,5 @@ python3 play_chess.py --player1=bot1 --player2=bot2
 
 2. Example Case:
 ```bash
-python3 play_chess.py --player1=mcts --player2=mcts_trained
-```
-
-### To train the Genetic Algorithm:
-```bash
-python3 play_chess.py --train_ga
-```
-
-### To train the Neural Fictitious Self Play Agent:
-```bash
-python3 play_chess.py --train_nfsp=True
+python3 play_chess.py --player1=mcts --player2=mcts_trained_pgn
 ```
