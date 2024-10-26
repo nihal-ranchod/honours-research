@@ -20,7 +20,7 @@ pip install numpy
 pip install matlplotlib
 ```
 
-### To run a single game of Monte Carlo Tree Search Variants:
+### To run a single game of Chess using any of the implemented agents:
 
 1. Bots:
 - Random Agents: `random`
