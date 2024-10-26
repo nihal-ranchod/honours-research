@@ -17,12 +17,11 @@
 ---
 
 ## Introduction
-The NFSP Chess Bot aims to tackle the complexities of chess through a combination of supervised learning and reinforcement learning using neural fictitious self-play. Leveraging OpenSpiel, a comprehensive framework for multi-agent environments, the NFSP approach dynamically adjusts its strategy through a mix of memory-based self-play and exploration.
+The NFSP Chess Bot aims to tackle chess through a combination of supervised learning and reinforcement learning using neural fictitious self-play. Leveraging OpenSpiel, for multi-agent environments, the NFSP approach dynamically adjusts its strategy through a mix of memory-based self-play and exploration.
 
 ## Design Goals and Constraints
 1. **Learning from Experience:** The bot should improve through experience, not relying on extensive domain-specific heuristics.
-2. **Performance Against Classic Engines:** Compete with classical engines (like Stockfish) for baseline assessments and performance tracking.
-3. **Aggressive Playstyle:** Design the bot to maintain an aggressive approach, particularly in the mid-game, to avoid excessive passive strategies that may lead to stalemates and draws.
+2. **Aggressive Playstyle:** Design the bot to maintain an aggressive approach, particularly in the mid-game, to avoid excessive passive strategies that may lead to stalemates and draws.
 
 ## Neural Fictitious Self-Play (NFSP) Overview
 NFSP is a hybrid of supervised learning (SL) and reinforcement learning (RL) to approximate Nash Equilibrium in two-player zero-sum games. It employs:
@@ -87,17 +86,9 @@ This approach reduces the likelihood of passive draw-prone strategies and increa
 
 3. **Training Duration**: The model is trained over multiple epochs, with regular validation checks to adjust for overfitting or lack of exploration.
 
-## Performance and Insights
-Initial testing demonstrates that the NFSP bot, with its aggressive tactics, performs consistently well against passive strategies, achieving higher win rates and fewer draws. The blend of supervised and reinforcement learning allows it to generalize effectively against a wide variety of opponents.
+## Insights
 
 **Key Insights**:
 - **Aggression Avoids Draws**: The aggressive style forces opponents into defensive positions, effectively reducing the frequency of drawn games.
 - **Strategic Flexibility**: NFSP’s dual learning methods provide the bot with a diverse range of tactical responses, improving adaptability in the mid-game.
 - **Balanced Improvement**: The SL-RL hybrid ensures that the bot can adopt a blend of long-term strategy and short-term tactics.
-
----
-
-## Conclusion
-This NFSP Chess Bot represents an innovative approach in AI for strategic games like chess. By embracing an aggressive playstyle, it avoids the common pitfalls of overly defensive self-play agents, maintaining a focus on decisive moves that lead to victory. This methodology, rooted in the principles of fictitious self-play, can be extended to other strategy games, further showcasing the adaptability and power of the NFSP algorithm in complex multi-agent environments.
-
----
