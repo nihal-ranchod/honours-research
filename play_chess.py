@@ -50,7 +50,7 @@ _KNOWN_PLAYERS = [
     # A Genetic Algorithm agent
     "ga",
 
-    # Baseline Stockfish agent
+    # Baseline Stockfish agent play at level 5
     "stockfish"
 ]
 
