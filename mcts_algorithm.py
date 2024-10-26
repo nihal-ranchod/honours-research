@@ -1,24 +1,9 @@
-# Copyright 2019 DeepMind Technologies Limited
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 """Monte-Carlo Tree Search algorithm for game play."""
 
 import math
 import time
 from collections import defaultdict
 import numpy as np
-
 import pyspiel
 import chess.pgn
 
@@ -459,7 +444,7 @@ class EnhancedSearchNode(SearchNode):
         super().__init__(action, player, prior)
         self.state = None
 
-class MCTSWithTraining(MCTSBot):
+class MCTS_with_PGN_Data(MCTSBot):
     """Enhanced MCTS algorithm that incorporates learning from historical chess games."""
 
     def __init__(

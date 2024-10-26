@@ -17,10 +17,8 @@ import numpy as np
 import os
 import torch
 import torch.nn as nn
+import matplotlib.pyplot as plt
 
-#from open_spiel.python.algorithms import mcts
-# from open_spiel.python.algorithms.alpha_zero import evaluator as az_evaluator
-# from open_spiel.python.algorithms.alpha_zero import model as az_model
 from open_spiel.python.bots import human
 from open_spiel.python.bots import uniform_random
 import pyspiel
@@ -28,8 +26,6 @@ import pyspiel
 # Add created Agents
 import mcts_algorithm as mcts
 from baseline import StockfishBot
-
-import matplotlib.pyplot as plt
 
 _KNOWN_PLAYERS = [
     # A vanilla Monte Carlo Tree Search agent.
@@ -96,7 +92,7 @@ def _init_bot(bot_type, game, player_id):
         verbose=FLAGS.verbose)
   if bot_type == "mcts_trained_pgn":
     evaluator = mcts.RandomRolloutEvaluator(FLAGS.rollout_count, rng)
-    return mcts.MCTSWithTraining(
+    return mcts.MCTS_with_PGN_Data(
         game,
         FLAGS.uct_c,
         FLAGS.max_simulations,
@@ -107,7 +103,7 @@ def _init_bot(bot_type, game, player_id):
         verbose=FLAGS.verbose)
   if bot_type == "mcts_trained_puzzle":
     evaluator = mcts.RandomRolloutEvaluator(FLAGS.rollout_count, rng)
-    return mcts.MCTSWithTraining(
+    return mcts.MCTS_with_PGN_Data(
         game,
         FLAGS.uct_c,
         FLAGS.max_simulations,
