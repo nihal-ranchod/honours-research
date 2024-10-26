@@ -308,7 +308,7 @@ class AggressiveNFSP:
             # Plot training progress periodically
             if (episode + 1) % 100 == 0:
                 self.plot_training_progress()
-                self.save_model(f"aggressive_nfsp_model_episode_{episode+1}.pth")
+                # self.save_model(f"aggressive_nfsp_model_episode_{episode+1}.pth")
         
         # Save final model
         self.save_model("aggressive_nfsp_model_final.pth")
@@ -381,7 +381,7 @@ class NFSPBot(pyspiel.Bot):
 def train_agent():
     game = pyspiel.load_game("chess")
     agent = AggressiveNFSP(game)
-    agent.train(num_episodes=10000)
+    agent.train(num_episodes=5000)
     return agent
 
 if __name__ == "__main__":
