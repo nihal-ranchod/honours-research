@@ -7,6 +7,7 @@
       player 2 - play as Black
 """
 
+
 import collections
 import random
 import sys
