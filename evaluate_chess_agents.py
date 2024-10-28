@@ -15,6 +15,7 @@ from open_spiel.python.bots import uniform_random
 import mcts_algorithm as mcts
 from nfsp_algorithm import NFSPBot
 from baseline import StockfishBot
+from genetic_algorithm import LoadedChessModel
 
 _KNOWN_PLAYERS = [
     "mcts",
@@ -23,6 +24,8 @@ _KNOWN_PLAYERS = [
     "mcts_trained_puzzle",
     "nfsp"
     "stockfish"
+    "ga",
+    "ga_puzzle"
 ]
 
 # Define command-line flags for configuring the game and bots
@@ -31,7 +34,7 @@ flags.DEFINE_enum("player1", "mcts", _KNOWN_PLAYERS, "Who controls player 1.")
 flags.DEFINE_enum("player2", "random", _KNOWN_PLAYERS, "Who controls player 2.")
 flags.DEFINE_string("gtp_path", None, "Where to find a binary for gtp.")
 flags.DEFINE_multi_string("gtp_cmd", [], "GTP commands to run at init.")
-flags.DEFINE_integer("num_games", 50, "Number of games to play between each pair of bots.")
+flags.DEFINE_integer("num_games", 10, "Number of games to play between each pair of bots.")
 flags.DEFINE_integer("rollout_count", 3, "Number of rollouts for the random rollout evaluator.")
 flags.DEFINE_float("uct_c", 2.0, "UCT exploration constant.")
 flags.DEFINE_integer("max_simulations", 1000, "Maximum number of MCTS simulations.")
@@ -108,6 +111,10 @@ def _init_bot(bot_type, game, player_id):
             verbose=FLAGS.verbose)
     if bot_type == "nfsp":
         return NFSPBot(game, player_id, "aggressive_nfsp_model_final.pth")
+    if bot_type == "ga":
+        return LoadedChessModel("best_genome.pkl")
+    if bot_type == "ga_puzzle":
+        return LoadedChessModel("best_genome_puzzle.pkl")
     if bot_type == "stockfish":
         return StockfishBot(player_id, FLAGS.stockfish_path)
     if bot_type == "random":
@@ -186,7 +193,7 @@ def main(argv):
     # Ensure flags are parsed before calling the _elo_update function
     game = pyspiel.load_game(FLAGS.game)
     
-    bot_types = ["random", "mcts", "mcts_trained_pgn", "mcts_trained_puzzle", "nfsp", "stockfish"]
+    bot_types = ["random", "mcts", "mcts_trained_pgn", "mcts_trained_puzzle", "nfsp", "stockfish", "ga", "ga_puzzle"]
     results = {}
     
     for bot1_type in bot_types:
