@@ -29,6 +29,7 @@ import pyspiel
 import mcts_algorithm as mcts
 from nfsp_algorithm import NFSPBot
 from baseline import StockfishBot
+from genetic_algorithm import LoadedChessModel
 
 _KNOWN_PLAYERS = [
     # A vanilla Monte Carlo Tree Search agent.
@@ -48,6 +49,12 @@ _KNOWN_PLAYERS = [
 
     # A Neural Fictitious Self-Play agent
     "nfsp",
+
+    # A Genetic Algorithm agent trained on standard PGN data
+    "ga",
+
+    # A Genetic Algorithm agent trained on chess puzzle data
+    "ga_puzzle",
 
     # Baseline Stockfish agent play at level 5
     "stockfish"
@@ -114,6 +121,10 @@ def _init_bot(bot_type, game, player_id):
         verbose=FLAGS.verbose)
   if bot_type == "nfsp":
     return NFSPBot(game, player_id, "aggressive_nfsp_model_final.pth")
+  if bot_type == "ga":
+    return LoadedChessModel("best_genome.pkl")
+  if bot_type == "ga_puzzle":
+    return LoadedChessModel("best_genome_puzzle.pkl")
   if bot_type == "stockfish":
     return StockfishBot(player_id, FLAGS.stockfish_path)
   if bot_type == "random":

@@ -130,9 +130,6 @@ def evaluate_bots(game, bot1, bot2, num_games):
             - "bot1_wins" (int): Number of games won by bot1.
             - "bot2_wins" (int): Number of games won by bot2.
             - "draws" (int): Number of games that ended in a draw.
-            - "total_moves" (int): Total number of moves made across all games.
-            - "total_time" (float): Total time taken to play all games.
-            - "move_times" (list of float): List of times taken for each move.
 
     The function performs the following steps:
     1. Initializes a results dictionary to store the statistics.
@@ -141,8 +138,7 @@ def evaluate_bots(game, bot1, bot2, num_games):
         a. Initializes the game state.
         b. Tracks the start time of the game.
         c. Alternates between the two bots to make moves until the game reaches a terminal state.
-        d. Records the time taken for each move.
-        e. Updates the results dictionary based on the game outcome.
+        d. Updates the results dictionary based on the game outcome.
     4. Aggregates the results and returns the statistics.
     """
 
