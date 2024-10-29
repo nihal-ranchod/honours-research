@@ -43,3 +43,9 @@ python3 play_chess.py --player1=bot1 --player2=bot2
 ```bash
 python3 play_chess.py --player1=mcts --player2=mcts_trained_pgn
 ```
+
+### Note: 
+In order to obtain the Neural Fictitious Self-Play Model the model needs be trained as the saved model is too large to track through git.
+```bash
+python3 nfsp_algorithm.py
+```
