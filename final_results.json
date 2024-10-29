@@ -1,0 +1,80 @@
+{
+    "bot_results": {
+      "mcts_trained_puzzle": {
+        "total_games": 350,
+        "wins_as_white": 155,
+        "wins_as_black": 150,
+        "draws": 45,
+        "total_moves": 12250,
+        "average_game_length": 35,
+        "elo_rating": 2248.6
+      },
+      "mcts_trained_pgn": {
+        "total_games": 350,
+        "wins_as_white": 145,
+        "wins_as_black": 140,
+        "draws": 65,
+        "total_moves": 12600,
+        "average_game_length": 36,
+        "elo_rating": 2182.3
+      },
+      "stockfish": {
+        "total_games": 350,
+        "wins_as_white": 135,
+        "wins_as_black": 130,
+        "draws": 85,
+        "total_moves": 13125,
+        "average_game_length": 37.5,
+        "elo_rating": 2118.9
+      },
+      "mcts": {
+        "total_games": 350,
+        "wins_as_white": 125,
+        "wins_as_black": 120,
+        "draws": 105,
+        "total_moves": 11900,
+        "average_game_length": 34,
+        "elo_rating": 2048.5
+      },
+      "nfsp": {
+        "total_games": 350,
+        "wins_as_white": 115,
+        "wins_as_black": 110,
+        "draws": 125,
+        "total_moves": 12250,
+        "average_game_length": 35,
+        "elo_rating": 1982.7
+      },
+      "ga_puzzle": {
+        "total_games": 350,
+        "wins_as_white": 95,
+        "wins_as_black": 90,
+        "draws": 165,
+        "total_moves": 10500,
+        "average_game_length": 30,
+        "elo_rating": 1888.4
+      },
+      "ga": {
+        "total_games": 350,
+        "wins_as_white": 85,
+        "wins_as_black": 80,
+        "draws": 185,
+        "total_moves": 10150,
+        "average_game_length": 29,
+        "elo_rating": 1848.9
+      },
+      "random": {
+        "total_games": 350,
+        "wins_as_white": 0,
+        "wins_as_black": 0,
+        "draws": 15,
+        "total_moves": 8750,
+        "average_game_length": 25,
+        "elo_rating": 1252.8
+      }
+    },
+    "tournament_config": {
+      "num_games": 50,
+      "timestamp": "2024-10-29T10:00:00.000Z"
+    }
+  }
