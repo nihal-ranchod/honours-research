@@ -1,13 +1,13 @@
 {
   "bot_results": {
-      "mcts_trained_puzzle": {
+        "mcts": {
           "total_games": 350,
-          "wins_as_white": 164,
-          "wins_as_black": 151,
-          "draws": 15,
-          "total_moves": 12250,
-          "average_game_length": 35,
-          "elo_rating": 2248.6
+          "wins_as_white": 131,
+          "wins_as_black": 134,
+          "draws": 35,
+          "total_moves": 11900,
+          "average_game_length": 34,
+          "elo_rating": 2048.5
       },
       "mcts_trained_pgn": {
           "total_games": 350,
@@ -18,23 +18,14 @@
           "average_game_length": 36,
           "elo_rating": 2182.3
       },
-      "stockfish": {
+      "mcts_trained_puzzle": {
           "total_games": 350,
-          "wins_as_white": 148,
-          "wins_as_black": 137,
-          "draws": 25,
-          "total_moves": 13125,
-          "average_game_length": 37.5,
-          "elo_rating": 2118.9
-      },
-      "mcts": {
-          "total_games": 350,
-          "wins_as_white": 131,
-          "wins_as_black": 134,
-          "draws": 35,
-          "total_moves": 11900,
-          "average_game_length": 34,
-          "elo_rating": 2048.5
+          "wins_as_white": 164,
+          "wins_as_black": 151,
+          "draws": 15,
+          "total_moves": 12250,
+          "average_game_length": 35,
+          "elo_rating": 2248.6
       },
       "nfsp": {
           "total_games": 350,
@@ -45,6 +36,15 @@
           "average_game_length": 35,
           "elo_rating": 1782.7
       },
+      "ga": {
+          "total_games": 350,
+          "wins_as_white": 42,
+          "wins_as_black": 43,
+          "draws": 65,
+          "total_moves": 10150,
+          "average_game_length": 29,
+          "elo_rating": 1548.9
+      },
       "ga_puzzle": {
           "total_games": 350,
           "wins_as_white": 68,
@@ -54,14 +54,14 @@
           "average_game_length": 30,
           "elo_rating": 1688.4
       },
-      "ga": {
+      "stockfish": {
           "total_games": 350,
-          "wins_as_white": 42,
-          "wins_as_black": 43,
-          "draws": 65,
-          "total_moves": 10150,
-          "average_game_length": 29,
-          "elo_rating": 1548.9
+          "wins_as_white": 148,
+          "wins_as_black": 137,
+          "draws": 25,
+          "total_moves": 13125,
+          "average_game_length": 37.5,
+          "elo_rating": 2118.9
       },
       "random": {
           "total_games": 350,

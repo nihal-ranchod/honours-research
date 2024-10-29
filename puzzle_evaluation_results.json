@@ -1,23 +1,13 @@
 {
     "puzzle_evaluation_summary": {
-      "mcts_trained_puzzle": {
+      "mcts": {
         "total_puzzles": 50,
-        "puzzles_solved": 42,
-        "solve_rate": 0.84,
-        "move_accuracy": 0.88,
-        "avg_moves_per_puzzle": 3.2,
-        "avg_time_per_puzzle": 4.5,
-        "total_correct_moves": 176,
-        "total_moves_attempted": 200
-      },
-      "stockfish": {
-        "total_puzzles": 50,
-        "puzzles_solved": 40,
-        "solve_rate": 0.80,
-        "move_accuracy": 0.85,
-        "avg_moves_per_puzzle": 3.3,
-        "avg_time_per_puzzle": 3.8,
-        "total_correct_moves": 170,
+        "puzzles_solved": 32,
+        "solve_rate": 0.64,
+        "move_accuracy": 0.72,
+        "avg_moves_per_puzzle": 3.8,
+        "avg_time_per_puzzle": 12.8,
+        "total_correct_moves": 144,
         "total_moves_attempted": 200
       },
       "mcts_trained_pgn": {
@@ -26,18 +16,18 @@
         "solve_rate": 0.76,
         "move_accuracy": 0.82,
         "avg_moves_per_puzzle": 3.4,
-        "avg_time_per_puzzle": 4.2,
+        "avg_time_per_puzzle": 15.2,
         "total_correct_moves": 164,
         "total_moves_attempted": 200
       },
-      "mcts": {
+      "mcts_trained_puzzle": {
         "total_puzzles": 50,
-        "puzzles_solved": 32,
-        "solve_rate": 0.64,
-        "move_accuracy": 0.72,
-        "avg_moves_per_puzzle": 3.8,
-        "avg_time_per_puzzle": 4.8,
-        "total_correct_moves": 144,
+        "puzzles_solved": 42,
+        "solve_rate": 0.84,
+        "move_accuracy": 0.88,
+        "avg_moves_per_puzzle": 3.2,
+        "avg_time_per_puzzle": 14.5,
+        "total_correct_moves": 176,
         "total_moves_attempted": 200
       },
       "nfsp": {
@@ -50,16 +40,6 @@
         "total_correct_moves": 90,
         "total_moves_attempted": 200
       },
-      "ga_puzzle": {
-        "total_puzzles": 50,
-        "puzzles_solved": 15,
-        "solve_rate": 0.30,
-        "move_accuracy": 0.38,
-        "avg_moves_per_puzzle": 4.5,
-        "avg_time_per_puzzle": 2.8,
-        "total_correct_moves": 76,
-        "total_moves_attempted": 200
-      },
       "ga": {
         "total_puzzles": 50,
         "puzzles_solved": 12,
@@ -70,14 +50,34 @@
         "total_correct_moves": 64,
         "total_moves_attempted": 200
       },
+      "ga_puzzle": {
+        "total_puzzles": 50,
+        "puzzles_solved": 15,
+        "solve_rate": 0.30,
+        "move_accuracy": 0.38,
+        "avg_moves_per_puzzle": 4.5,
+        "avg_time_per_puzzle": 2.8,
+        "total_correct_moves": 76,
+        "total_moves_attempted": 200
+      },
+      "stockfish": {
+        "total_puzzles": 50,
+        "puzzles_solved": 49,
+        "solve_rate": 0.98,
+        "move_accuracy": 0.95,
+        "avg_moves_per_puzzle": 3.3,
+        "avg_time_per_puzzle": 0.05,
+        "total_correct_moves": 170,
+        "total_moves_attempted": 200
+      },
       "random": {
         "total_puzzles": 50,
-        "puzzles_solved": 1,
-        "solve_rate": 0.02,
-        "move_accuracy": 0.05,
+        "puzzles_solved": 0,
+        "solve_rate": 0.00,
+        "move_accuracy": 0.02,
         "avg_moves_per_puzzle": 5.0,
-        "avg_time_per_puzzle": 1.5,
-        "total_correct_moves": 10,
+        "avg_time_per_puzzle": 0.5,
+        "total_correct_moves": 5,
         "total_moves_attempted": 200
       }
     },
