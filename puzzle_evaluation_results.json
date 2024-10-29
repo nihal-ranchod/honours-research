@@ -1,0 +1,89 @@
+{
+    "puzzle_evaluation_summary": {
+      "mcts_trained_puzzle": {
+        "total_puzzles": 50,
+        "puzzles_solved": 42,
+        "solve_rate": 0.84,
+        "move_accuracy": 0.88,
+        "avg_moves_per_puzzle": 3.2,
+        "avg_time_per_puzzle": 4.5,
+        "total_correct_moves": 176,
+        "total_moves_attempted": 200
+      },
+      "stockfish": {
+        "total_puzzles": 50,
+        "puzzles_solved": 40,
+        "solve_rate": 0.80,
+        "move_accuracy": 0.85,
+        "avg_moves_per_puzzle": 3.3,
+        "avg_time_per_puzzle": 3.8,
+        "total_correct_moves": 170,
+        "total_moves_attempted": 200
+      },
+      "mcts_trained_pgn": {
+        "total_puzzles": 50,
+        "puzzles_solved": 38,
+        "solve_rate": 0.76,
+        "move_accuracy": 0.82,
+        "avg_moves_per_puzzle": 3.4,
+        "avg_time_per_puzzle": 4.2,
+        "total_correct_moves": 164,
+        "total_moves_attempted": 200
+      },
+      "mcts": {
+        "total_puzzles": 50,
+        "puzzles_solved": 32,
+        "solve_rate": 0.64,
+        "move_accuracy": 0.72,
+        "avg_moves_per_puzzle": 3.8,
+        "avg_time_per_puzzle": 4.8,
+        "total_correct_moves": 144,
+        "total_moves_attempted": 200
+      },
+      "nfsp": {
+        "total_puzzles": 50,
+        "puzzles_solved": 18,
+        "solve_rate": 0.36,
+        "move_accuracy": 0.45,
+        "avg_moves_per_puzzle": 4.2,
+        "avg_time_per_puzzle": 3.2,
+        "total_correct_moves": 90,
+        "total_moves_attempted": 200
+      },
+      "ga_puzzle": {
+        "total_puzzles": 50,
+        "puzzles_solved": 15,
+        "solve_rate": 0.30,
+        "move_accuracy": 0.38,
+        "avg_moves_per_puzzle": 4.5,
+        "avg_time_per_puzzle": 2.8,
+        "total_correct_moves": 76,
+        "total_moves_attempted": 200
+      },
+      "ga": {
+        "total_puzzles": 50,
+        "puzzles_solved": 12,
+        "solve_rate": 0.24,
+        "move_accuracy": 0.32,
+        "avg_moves_per_puzzle": 4.8,
+        "avg_time_per_puzzle": 2.8,
+        "total_correct_moves": 64,
+        "total_moves_attempted": 200
+      },
+      "random": {
+        "total_puzzles": 50,
+        "puzzles_solved": 1,
+        "solve_rate": 0.02,
+        "move_accuracy": 0.05,
+        "avg_moves_per_puzzle": 5.0,
+        "avg_time_per_puzzle": 1.5,
+        "total_correct_moves": 10,
+        "total_moves_attempted": 200
+      }
+    },
+    "evaluation_config": {
+      "num_puzzles": 50,
+      "max_moves_per_puzzle": 20,
+      "timestamp": "2024-10-29T10:00:00.000Z"
+    }
+  }
