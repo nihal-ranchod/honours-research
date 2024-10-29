@@ -17,7 +17,7 @@ class StockfishBot:
         self.player_id = player_id
         self.engine = chess.engine.SimpleEngine.popen_uci(stockfish_path)
         self.time_limit = time_limit
-        self.engine.configure({"Skill Level": 0})
+        self.engine.configure({"Skill Level": 1})
 
     def restart(self):
         """Restarts the bot to an initial state."""
