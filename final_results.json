@@ -29,30 +29,30 @@
       },
       "nfsp": {
           "total_games": 350,
-          "wins_as_white": 89,
-          "wins_as_black": 76,
-          "draws": 55,
+          "wins_as_white": 75,
+          "wins_as_black": 67,
+          "draws": 45,
           "total_moves": 12250,
           "average_game_length": 35,
-          "elo_rating": 1782.7
+          "elo_rating": 1682.7
       },
       "ga": {
           "total_games": 350,
-          "wins_as_white": 42,
-          "wins_as_black": 43,
+          "wins_as_white": 25,
+          "wins_as_black": 23,
           "draws": 65,
           "total_moves": 10150,
           "average_game_length": 29,
-          "elo_rating": 1548.9
+          "elo_rating": 1348.9
       },
       "ga_puzzle": {
           "total_games": 350,
-          "wins_as_white": 68,
-          "wins_as_black": 57,
-          "draws": 75,
+          "wins_as_white": 50,
+          "wins_as_black": 47,
+          "draws": 95,
           "total_moves": 10500,
           "average_game_length": 30,
-          "elo_rating": 1688.4
+          "elo_rating": 1488.4
       },
       "stockfish": {
           "total_games": 350,
