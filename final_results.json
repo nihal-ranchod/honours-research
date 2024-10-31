@@ -2,8 +2,8 @@
   "bot_results": {
         "mcts": {
           "total_games": 350,
-          "wins_as_white": 131,
-          "wins_as_black": 134,
+          "wins_as_white": 134,
+          "wins_as_black": 131,
           "draws": 35,
           "total_moves": 11900,
           "average_game_length": 34,
@@ -11,8 +11,8 @@
       },
       "mcts_trained_pgn": {
           "total_games": 350,
-          "wins_as_white": 147,
-          "wins_as_black": 153,
+          "wins_as_white": 153,
+          "wins_as_black": 147,
           "draws": 20,
           "total_moves": 12600,
           "average_game_length": 36,
