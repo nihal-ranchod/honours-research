@@ -6,6 +6,9 @@
 
 This reasearch project is built using [OpenSpiel](https://github.com/google-deepmind/open_spiel): A collection of environments and algorithms for research in general reinforcement learning and search/planning in games.
 
+### Research Paper
+The final Research Paper can be found here: [Research Report](./Research Report.pdf)
+
 ### Dependencies 
 ```bash
 pip install chess
@@ -49,6 +52,3 @@ In order to obtain the Neural Fictitious Self-Play Model the model needs be trai
 ```bash
 python3 nfsp_algorithm.py
 ```
-
-
-<h3 align="center"> The final Reserach paper can be found here: [Research Report](./Research Report.pdf) </h3>
