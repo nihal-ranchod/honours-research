@@ -7,7 +7,7 @@
 This reasearch project is built using [OpenSpiel](https://github.com/google-deepmind/open_spiel): A collection of environments and algorithms for research in general reinforcement learning and search/planning in games.
 
 ### Research Paper
-The final Research Paper can be found here: [Research Report](./Research Report.pdf)
+The final Research Paper can be found here: [Research Report](/Research%20Report.pdf)
 
 ### Dependencies 
 ```bash
